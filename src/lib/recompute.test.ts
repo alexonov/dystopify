@@ -6,7 +6,7 @@ import test from "node:test";
 import Database from "better-sqlite3";
 import { migrate } from "./db";
 import { insertHeadlines, recomputeDate } from "./recompute";
-import { entailmentKey } from "./score";
+import { counterKey, entailmentKey } from "./score";
 import { titleKey } from "./text";
 
 test("cross-outlet titles score once and descriptions do not score", () => {
@@ -62,7 +62,10 @@ test("cross-outlet titles score once and descriptions do not score", () => {
     db,
     "2026-10-01",
     "2026-10-01T12:30:00.000Z",
-    new Map([[entailmentKey("1984", "surveillance", key), 0.95]]),
+    new Map([
+      [entailmentKey("1984", "surveillance", key), 0.95],
+      [counterKey("1984", "surveillance", key), 0.1],
+    ]),
   );
 
   const score = db

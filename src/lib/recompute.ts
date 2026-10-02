@@ -2,6 +2,7 @@ import { books, themeRule } from "../../data/books";
 import type Database from "better-sqlite3";
 import {
   ENTAILMENT_MIN,
+  counterKey,
   entailmentKey,
   matchedAnchors,
   premiseForAnchors,
@@ -117,11 +118,19 @@ export function entailmentPairs(groups: TitleGroup[]): EntailmentPair[] {
       for (const group of groups) {
         const found = matchedAnchors(group.titles, rule.anchors);
         if (found.length === 0) continue;
+        const premise = premiseForAnchors(group.titles, found);
         pairs.push({
           id: entailmentKey(book.id, theme.id, group.titleKey),
-          premise: premiseForAnchors(group.titles, found),
+          premise,
           hypothesis: rule.hypothesis,
         });
+        if (rule.counter) {
+          pairs.push({
+            id: counterKey(book.id, theme.id, group.titleKey),
+            premise,
+            hypothesis: rule.counter,
+          });
+        }
       }
     }
   }

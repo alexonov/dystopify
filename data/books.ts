@@ -3,8 +3,9 @@
  *
  * A headline counts for a theme only when its title contains one of that
  * theme's anchor words as a whole word, and the local entailment model
- * scores that theme's hypothesis at 0.90 or higher. A counted headline
- * adds weight 2 for that theme, once. The score is
+ * scores that theme's hypothesis at 0.90 or higher. When the theme has a
+ * counter-claim, the hypothesis must also score higher than that claim.
+ * A counted headline adds weight 2 for that theme, once. The score is
  * round(100 * (1 - e^(-raw / RAW_SCALE))).
  */
 
@@ -89,12 +90,12 @@ export const books: Book[] = [
         ],
       },
       {
-        id: "conditioning",
-        name: "Conditioning",
+        id: "designed-births",
+        name: "Designed and sorted births",
         phrases: [
-          { text: "behavioral nudge", weight: 3 },
-          { text: "behavioural nudge", weight: 3 },
-          { text: "nudge unit", weight: 2 },
+          { text: "embryo screening", weight: 3 },
+          { text: "designer baby", weight: 3 },
+          { text: "polygenic screening", weight: 2 },
         ],
       },
       {
@@ -764,6 +765,7 @@ export const books: Book[] = [
 export type ThemeRule = {
   hypothesis: string;
   anchors: string[];
+  counter?: string;
 };
 
 export function ruleKey(bookId: string, themeId: string): string {
@@ -772,28 +774,65 @@ export function ruleKey(bookId: string, themeId: string): string {
 
 export const themeRules: Record<string, ThemeRule> = {
   "1984/surveillance": {
-    hypothesis: "This headline reports that people are being spied on.",
-    anchors: ["surveillance", "spy", "snooping", "spyware"],
+    hypothesis: "A government is watching its own citizens, journalists, or critics.",
+    counter: "Monitoring for disease, weather, or public safety.",
+    anchors: [
+      "surveillance",
+      "spy",
+      "spying",
+      "spyware",
+      "snooping",
+      "monitoring",
+      "wiretap",
+      "tracked",
+      "facial recognition",
+    ],
   },
   "1984/mutable-record": {
-    hypothesis: "This headline reports that a fake image or recording is being presented as real.",
-    anchors: ["deepfake", "doctored", "falsified"],
+    hypothesis: "A government deleted, altered, or hid its own records, statistics, or history.",
+    counter: "A fake image or video made by someone outside government.",
+    anchors: [
+      "deleted",
+      "erased",
+      "scrubbed",
+      "removed",
+      "rewrite",
+      "rewritten",
+      "altered",
+      "archive",
+      "statistics",
+      "records",
+    ],
   },
   "1984/permanent-enemy": {
-    hypothesis: "This headline reports that a government is maintaining a permanent enemy.",
-    anchors: ["enemy", "foe"],
+    hypothesis: "A government labels a group of its own people as enemies, traitors, or foreign agents.",
+    counter: "A report of a battle or military attack.",
+    anchors: ["enemy", "enemies", "traitor", "traitors", "foreign agent", "foreign agents", "enemy within"],
   },
   "brave-new-world/chemical-peace": {
-    hypothesis: "This headline reports that a drug is being used to keep a population calm.",
-    anchors: ["sedative", "opioid", "tranquilizer", "tranquiliser"],
+    hypothesis: "A drug for mood, weight, or attention is being prescribed or sold to millions.",
+    counter: "A drug overdose, drug crime, or single patient's story.",
+    anchors: [
+      "antidepressant",
+      "antidepressants",
+      "ketamine",
+      "psilocybin",
+      "ozempic",
+      "wegovy",
+      "glp-1",
+      "prescriptions",
+      "sedative",
+    ],
   },
-  "brave-new-world/conditioning": {
-    hypothesis: "This headline reports that a government is conditioning people's behavior.",
-    anchors: ["conditioning", "nudge", "reeducation"],
+  "brave-new-world/designed-births": {
+    hypothesis: "Embryos or children are being screened, selected, or designed for traits.",
+    counter: "A routine fertility treatment for one family.",
+    anchors: ["embryo", "embryos", "ivf", "polygenic", "designer", "screening"],
   },
   "brave-new-world/managed-pleasure": {
-    hypothesis: "This headline reports that pleasure is being supplied so people stop resisting.",
-    anchors: ["dopamine", "hedonism", "pleasure"],
+    hypothesis: "People are spending record amounts of time or money on betting, streaming, or apps built to keep them engaged.",
+    counter: "A single game, show, or company result.",
+    anchors: ["betting", "gambling", "casino", "streaming", "engagement", "binge"],
   },
   "we/transparency": {
     hypothesis: "This headline reports that people must register under their real names.",
@@ -852,8 +891,9 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["oligarchy", "oligarch", "plutocracy"],
   },
   "the-iron-heel/labor-crushed": {
-    hypothesis: "This headline reports labor unrest.",
-    anchors: ["strike", "union", "picket"],
+    hypothesis: "A government or employer used police, troops, courts, or a new law to stop a strike or break a union.",
+    counter: "Workers are on strike, plan to strike, or are bargaining.",
+    anchors: ["strike", "strikers", "union", "unions", "picket", "lockout"],
   },
   "it-cant-happen-here/elected-strongman": {
     hypothesis: "This headline reports that an election installed a dictator.",
@@ -864,7 +904,8 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["militia", "paramilitary", "vigilante"],
   },
   "the-space-merchants/ads-as-government": {
-    hypothesis: "This headline reports that a state is spreading propaganda.",
+    hypothesis: "Advertisers or a marketing firm are writing government policy or running a government's message.",
+    counter: "A government spreading its own propaganda.",
     anchors: ["propaganda"],
   },
   "the-space-merchants/person-sold": {
@@ -880,8 +921,20 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["reeducation", "indoctrination"],
   },
   "dune/resource-dependence": {
-    hypothesis: "This headline reports that a government is building a fuel pipeline.",
-    anchors: ["pipeline"],
+    hypothesis: "A country or company is using control of a scarce resource to punish others.",
+    counter: "A plan to build, open, or restart a pipeline, mine, or energy project.",
+    anchors: [
+      "embargo",
+      "cartel",
+      "opec",
+      "chokepoint",
+      "monopoly",
+      "rare earth",
+      "rare earths",
+      "export ban",
+      "lithium",
+      "cobalt",
+    ],
   },
   "dune/religion-as-arm": {
     hypothesis: "This headline reports that a ruling family is using religion as a military force.",

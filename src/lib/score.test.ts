@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { books, themeRule, themeRules } from "../../data/books";
-import { anchorHits, entailmentKey, phraseHits, scoreFromRaw, scoreTitleGroups, type TitleGroup } from "./score";
+import { anchorHits, counterKey, entailmentKey, phraseHits, scoreFromRaw, scoreTitleGroups, type TitleGroup } from "./score";
+import { contentWords, storyRaw, storyWeight } from "./stories";
 
 const BANNED = new Set([
   "drug",
@@ -81,14 +82,15 @@ test("phrases stay strict and weighted", () => {
       }
       const rule = themeRule(book.id, theme.id);
       assert.ok(rule, `${book.id}/${theme.id}`);
-      assert.ok(rule.anchors.length > 0 && rule.anchors.length <= 4);
+      assert.ok(rule.anchors.length > 0 && rule.anchors.length <= 12);
       assert.ok(rule.hypothesis.length > 0);
       for (const anchor of rule.anchors) {
-        assert.equal(anchor.includes(" "), false, anchor);
-        const tokens = anchor.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-        for (const token of tokens) {
+        assert.equal(anchor, anchor.toLowerCase().trim(), anchor);
+        const tokens = anchor.split(/[^a-z0-9]+/).filter(Boolean);
+        assert.ok(tokens.length > 0, anchor);
+        if (tokens.length === 1) {
           assert.equal(
-            ["ai", "war", "police", "ban", "drug", "robot", "computer", "drone", "camera"].includes(token),
+            ["ai", "war", "police", "ban", "drug", "robot", "computer", "drone", "camera"].includes(tokens[0]),
             false,
             anchor,
           );
@@ -144,13 +146,65 @@ test("word boundaries and anchor plus entailment", () => {
   const low = new Map([[entailmentKey(book.id, "surveillance", "morocco"), 0.89]]);
   assert.equal(scoreTitleGroups(book, groups, low).raw, 0);
 
-  const high = new Map([[entailmentKey(book.id, "surveillance", "morocco"), 0.992]]);
+  const high = new Map([
+    [entailmentKey(book.id, "surveillance", "morocco"), 0.992],
+    [counterKey(book.id, "surveillance", "morocco"), 0.1],
+  ]);
   const tally = scoreTitleGroups(book, groups, high);
   assert.equal(tally.raw, 2);
   assert.equal(tally.score, 22);
   assert.equal(tally.matchedCount, 1);
   assert.equal(tally.themePoints.surveillance, 2);
   assert.equal(tally.matches[0].hits[0].phrase, "surveillance");
+});
+
+test("the counts claim has to beat its twin", () => {
+  const book = books.find((item) => item.id === "the-iron-heel");
+  assert.ok(book);
+  const groups: TitleGroup[] = [
+    {
+      titleKey: "strike",
+      titles: ["City workers remain on strike"],
+      displayTitle: "City workers remain on strike",
+      publishedAt: "2026-10-01T12:00:00.000Z",
+    },
+  ];
+  const loses = new Map([
+    [entailmentKey(book.id, "labor-crushed", "strike"), 0.95],
+    [counterKey(book.id, "labor-crushed", "strike"), 0.97],
+  ]);
+  assert.equal(scoreTitleGroups(book, groups, loses, 0.8).raw, 0);
+  const tie = new Map([
+    [entailmentKey(book.id, "labor-crushed", "strike"), 0.95],
+    [counterKey(book.id, "labor-crushed", "strike"), 0.95],
+  ]);
+  assert.equal(scoreTitleGroups(book, groups, tie, 0.8).raw, 0);
+  const wins = new Map([
+    [entailmentKey(book.id, "labor-crushed", "strike"), 0.95],
+    [counterKey(book.id, "labor-crushed", "strike"), 0.4],
+  ]);
+  assert.equal(scoreTitleGroups(book, groups, wins, 0.8).raw, 2);
+});
+
+test("two shared content words are one story and later stories add half as much", () => {
+  assert.equal(storyWeight(0), 0);
+  assert.equal(storyWeight(1), 2);
+  assert.equal(storyWeight(2), 3);
+  assert.equal(storyWeight(3), 3.5);
+
+  const privacy = ["privacy"];
+  const first = contentWords(
+    "New Mexico jury finds Facebook liable for deceiving users about privacy protections",
+    privacy,
+  );
+  const second = contentWords("Jury: Facebook liable for deceiving users about privacy protections", privacy);
+  const other = contentWords("Cameroon teachers remain on strike over pay", ["strike", "union"]);
+  assert.equal(storyRaw([{ words: first }, { words: second }]), 2);
+  assert.equal(storyRaw([{ words: first }, { words: second }, { words: other }]), 3);
+
+  const canada = contentWords("Canada's proposed oil pipeline offers relief", ["pipeline"]);
+  const fast = contentWords("Canada to fast track oil pipeline meant to diversify", ["pipeline"]);
+  assert.equal(storyRaw([{ words: canada }, { words: fast }]), 2);
 });
 
 test("a repeated title counts once", () => {

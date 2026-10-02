@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { books } from "../../data/books";
-import { entailmentKey, scoreFromRaw, scoreTitleGroups, type TitleGroup } from "./score";
+import { counterKey, entailmentKey, scoreFromRaw, scoreTitleGroups, type TitleGroup } from "./score";
 import { gdeltArtListUrl, parseGdeltArtList, titleFromGkgLine } from "./gdelt";
 import { combineWindow, formatWindowNote, weekWindows } from "./week";
 
@@ -103,7 +103,10 @@ test("a score under 0.90 counts only when the floor is open", () => {
       publishedAt: "2026-10-01T15:00:00.000Z",
     },
   ];
-  const scores = new Map([[entailmentKey(book.id, "surveillance", "morocco"), 0.85]]);
+  const scores = new Map([
+    [entailmentKey(book.id, "surveillance", "morocco"), 0.85],
+    [counterKey(book.id, "surveillance", "morocco"), 0.1],
+  ]);
   assert.equal(scoreTitleGroups(book, groups, scores, 0.9).raw, 0);
   assert.equal(scoreTitleGroups(book, groups, scores, 0.8).raw, 2);
 });
