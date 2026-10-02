@@ -109,7 +109,7 @@ function Panel({ book, date, matches }: { book: BookScoreView; date: string; mat
       <section className="space-y-2">
         <h2 className="font-mono text-[10px] tracking-[0.22em] text-muted-foreground">HISTORY</h2>
         <ul className="border-y border-border">
-          {book.history.map((point) => (
+          {book.listedHistory.map((point) => (
             <li key={point.date} className="flex items-baseline justify-between border-b border-border px-2 py-1 font-mono text-xs last:border-b-0">
               <span className="text-muted-foreground">{formatBoardDate(point.date)}</span>
               <span className="tabular-nums">{point.score}%</span>

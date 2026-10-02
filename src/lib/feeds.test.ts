@@ -23,8 +23,24 @@ test("the reader uses every feed named in the plan", () => {
       "https://www.aljazeera.com/xml/rss/all.xml",
       "https://www.france24.com/en/rss",
       "https://rss.dw.com/rdf/rss-en-all",
+      "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+      "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
+      "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+      "https://rss.cbc.ca/lineup/topstories.xml",
+      "https://rss.cbc.ca/lineup/world.xml",
+      "https://www.abc.net.au/news/feed/51120/rss.xml",
+      "https://rss.politico.com/politics-news.xml",
+      "https://www.cbsnews.com/latest/rss/main",
+      "https://rss.dw.com/rdf/rss-en-world",
+      "https://www.pbs.org/newshour/feeds/rss/headlines",
+      "https://feeds.npr.org/1019/rss.xml",
+      "https://www.theguardian.com/politics/rss",
+      "https://abcnews.go.com/abcnews/topstories",
+      "https://feeds.nbcnews.com/nbcnews/public/news",
+      "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
     ],
   );
   assert.equal(sourceName("bbc-world"), "BBC News");
   assert.equal(sourceName("guardian-society"), "The Guardian");
+  assert.equal(sourceName("dw-world"), "DW");
 });

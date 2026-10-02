@@ -39,8 +39,8 @@ const RDF = `<?xml version="1.0"?>
 </rdf:RDF>`;
 
 test("every feed named in the plan, BBC attributed as BBC News", () => {
-  assert.equal(feeds.length, 17);
-  assert.equal(new Set(feeds.map((feed) => feed.url)).size, 17);
+  assert.equal(feeds.length, 32);
+  assert.equal(new Set(feeds.map((feed) => feed.url)).size, 32);
   for (const feed of feeds.filter((item) => item.id.startsWith("bbc-"))) {
     assert.equal(feed.source, "BBC News");
   }

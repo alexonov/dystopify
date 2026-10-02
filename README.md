@@ -6,7 +6,7 @@ The number is how much of that UTC day's headlines match the book. It is not a f
 
 ## Run ingest
 
-Ingest is the only writer. It requests the public RSS feeds named for this meter (BBC News, NPR, The Guardian, Al Jazeera, France 24, and DW), stores a thin copy of each headline, and recomputes scores for the current UTC date and the day before. Rows older than 45 days are deleted.
+Ingest is the only writer. It requests the public RSS feeds named for this meter (BBC News, NPR, The Guardian, Al Jazeera, France 24, DW, The New York Times, CBC, ABC Australia, Politico, CBS News, PBS NewsHour, ABC News, NBC News, and UN News), stores a thin copy of each headline, and recomputes scores for the current UTC date and the day before. Rows older than 45 days are deleted. BBC items are attributed as BBC News. A book page lists history for days that counted at least one headline, and for the latest day.
 
 ```bash
 npm install

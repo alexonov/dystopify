@@ -1,5 +1,13 @@
 import type { BookScoreView, HistoryPoint, ThemePoint } from "./view";
 
+export function listedHistory(
+  points: HistoryPoint[],
+  latestDate: string,
+  countedDates: ReadonlySet<string>,
+): HistoryPoint[] {
+  return points.filter((point) => point.date === latestDate || countedDates.has(point.date));
+}
+
 export function dayDelta(history: HistoryPoint[]): number | null {
   if (history.length < 2) return null;
   const last = history[history.length - 1].score;

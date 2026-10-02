@@ -90,6 +90,81 @@ export const feeds: Feed[] = [
     url: "https://rss.dw.com/rdf/rss-en-all",
     source: "DW",
   },
+  {
+    id: "nyt-world",
+    url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+    source: "The New York Times",
+  },
+  {
+    id: "nyt-politics",
+    url: "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
+    source: "The New York Times",
+  },
+  {
+    id: "nyt-technology",
+    url: "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+    source: "The New York Times",
+  },
+  {
+    id: "cbc-top",
+    url: "https://rss.cbc.ca/lineup/topstories.xml",
+    source: "CBC",
+  },
+  {
+    id: "cbc-world",
+    url: "https://rss.cbc.ca/lineup/world.xml",
+    source: "CBC",
+  },
+  {
+    id: "abc-australia",
+    url: "https://www.abc.net.au/news/feed/51120/rss.xml",
+    source: "ABC Australia",
+  },
+  {
+    id: "politico",
+    url: "https://rss.politico.com/politics-news.xml",
+    source: "Politico",
+  },
+  {
+    id: "cbs-news",
+    url: "https://www.cbsnews.com/latest/rss/main",
+    source: "CBS News",
+  },
+  {
+    id: "dw-world",
+    url: "https://rss.dw.com/rdf/rss-en-world",
+    source: "DW",
+  },
+  {
+    id: "pbs-newshour",
+    url: "https://www.pbs.org/newshour/feeds/rss/headlines",
+    source: "PBS NewsHour",
+  },
+  {
+    id: "npr-technology",
+    url: "https://feeds.npr.org/1019/rss.xml",
+    source: "NPR",
+  },
+  {
+    id: "guardian-politics",
+    url: "https://www.theguardian.com/politics/rss",
+    source: "The Guardian",
+  },
+  {
+    id: "abc-news",
+    url: "https://abcnews.go.com/abcnews/topstories",
+    source: "ABC News",
+  },
+  {
+    id: "nbc-news",
+    url: "https://feeds.nbcnews.com/nbcnews/public/news",
+    source: "NBC News",
+  },
+  {
+    id: "un-news",
+    url: "https://news.un.org/feed/subscribe/en/news/all/rss.xml",
+    source: "UN News",
+  },
 ];
 
 export function sourceName(feedId: string): string {

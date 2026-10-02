@@ -22,6 +22,7 @@ export type BookScoreView = {
   headlinesRead: number;
   themes: ThemePoint[];
   history: HistoryPoint[];
+  listedHistory: HistoryPoint[];
 };
 
 export type Banner = {

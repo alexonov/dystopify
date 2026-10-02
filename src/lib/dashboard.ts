@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { getBook, books } from "../../data/books";
 import { openReadDatabase } from "./db";
+import { listedHistory } from "./board";
 import { sourceName } from "./feeds";
 import type { Banner, BookScoreView, DayView, HistoryPoint, MatchView } from "./view";
 
@@ -85,8 +86,10 @@ function bookViews(
     themes.set(row.book_id, bookThemes);
   }
   const history = new Map<string, HistoryPoint[]>();
+  const countedDates = new Set<string>();
   for (const row of historyRows) {
     if (row.date > date) continue;
+    if (row.score > 0) countedDates.add(row.date);
     const points = history.get(row.book_id) ?? [];
     points.push({ date: row.date, score: row.score });
     history.set(row.book_id, points);
@@ -116,6 +119,7 @@ function bookViews(
           points: themeMap.get(theme.id) ?? 0,
         })),
         history: points,
+        listedHistory: listedHistory(points, date, countedDates),
       },
     ];
   });
