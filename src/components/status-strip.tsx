@@ -1,34 +1,42 @@
-import { formatBoardDate, formatBoardStamp } from "@/lib/dates";
+import { formatBoardStamp } from "@/lib/dates";
+import { formatDelta } from "@/lib/board";
 import type { Banner } from "@/lib/view";
 
 export function StatusStrip({
   date,
-  headlinesRead,
-  lastSuccessAt,
+  titlesRead,
+  awake,
+  move,
 }: {
   date: string | null;
-  headlinesRead: number | null;
-  lastSuccessAt: string | null;
+  titlesRead: number | null;
+  awake: number | null;
+  move: number | null;
 }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-y border-border py-2 font-mono sm:grid-cols-4">
-      <div>
-        <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">AS OF</dt>
-        <dd className="text-sm tabular-nums">{date ? formatBoardDate(date) : "—"}</dd>
-      </div>
-      <div>
-        <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">READ</dt>
-        <dd className="text-sm tabular-nums">{headlinesRead ?? "—"}</dd>
-      </div>
-      <div>
-        <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">INGEST</dt>
-        <dd className="text-sm tabular-nums">{lastSuccessAt ? formatBoardStamp(lastSuccessAt) : "—"}</dd>
-      </div>
-      <div>
-        <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">MARK</dt>
-        <dd className="text-sm tracking-wide">NOT A FORECAST</dd>
-      </div>
-    </dl>
+    <div className="space-y-1">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-y border-border py-2 font-mono sm:grid-cols-4">
+        <div>
+          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">AS OF</dt>
+          <dd className="text-sm tabular-nums">{date ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">TITLES</dt>
+          <dd className="text-sm tabular-nums">{titlesRead ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">AWAKE</dt>
+          <dd className="text-sm tabular-nums">{awake ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">MOVE</dt>
+          <dd className="text-sm tabular-nums">{titlesRead == null ? "—" : formatDelta(move)}</dd>
+        </div>
+      </dl>
+      <p className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground">
+        This is pressure in today&apos;s headlines.
+      </p>
+    </div>
   );
 }
 

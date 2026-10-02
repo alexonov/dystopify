@@ -104,8 +104,8 @@ function bookViews(
         title: book.title,
         author: book.author,
         year: book.year,
-        gloss: book.gloss,
-        lens: book.lens,
+        phrase: book.phrase,
+        neighbor: book.neighbor,
         raw: score.raw,
         score: score.score,
         matchedCount: score.matched_count,
@@ -115,7 +115,7 @@ function bookViews(
           name: theme.name,
           points: themeMap.get(theme.id) ?? 0,
         })),
-        history: points.slice(-7),
+        history: points,
       },
     ];
   });
@@ -146,26 +146,14 @@ export async function loadDay(): Promise<DayView> {
     .prepare(`SELECT date, book_id, score FROM scores WHERE date <= ? ORDER BY date ASC`)
     .all(latest.date) as HistoryRow[];
 
-  const views = bookViews(latest.date, scoreRows, themeRows, historyRows);
-  const catalogOrder = new Map(books.map((book, index) => [book.id, index]));
-  const ranked = views
-    .filter((book) => book.score > 0)
-    .sort(
-      (a, b) =>
-        b.score - a.score ||
-        (catalogOrder.get(a.id) ?? 0) - (catalogOrder.get(b.id) ?? 0),
-    );
-  const quiet = views
-    .filter((book) => book.score === 0)
-    .sort((a, b) => (catalogOrder.get(a.id) ?? 0) - (catalogOrder.get(b.id) ?? 0));
-  const headlinesRead = views[0]?.headlinesRead ?? 0;
+  const rows = bookViews(latest.date, scoreRows, themeRows, historyRows);
+  const headlinesRead = rows[0]?.headlinesRead ?? 0;
 
   return {
     kind: "ready",
     date: latest.date,
     headlinesRead,
-    ranked,
-    quiet,
+    rows,
     banner,
     lastSuccessAt,
   };
@@ -195,7 +183,7 @@ export async function loadBook(id: string): Promise<
     };
   }
 
-  const entry = [...day.ranked, ...day.quiet].find((item) => item.id === id);
+  const entry = day.rows.find((item) => item.id === id);
   if (!entry) {
     return {
       kind: "empty",

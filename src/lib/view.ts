@@ -14,8 +14,8 @@ export type BookScoreView = {
   title: string;
   author: string;
   year: number;
-  gloss: string;
-  lens: string;
+  phrase: string;
+  neighbor: string;
   raw: number;
   score: number;
   matchedCount: number;
@@ -56,8 +56,7 @@ export type DayView =
       kind: "ready";
       date: string;
       headlinesRead: number;
-      ranked: BookScoreView[];
-      quiet: BookScoreView[];
+      rows: BookScoreView[];
       banner: Banner | null;
       lastSuccessAt: string | null;
     };

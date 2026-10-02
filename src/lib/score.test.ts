@@ -24,17 +24,60 @@ test("curve matches the published table", () => {
   assert.equal(scoreFromRaw(24), 95);
 });
 
+const ADDED = new Set([
+  "the-time-machine",
+  "the-island-of-doctor-moreau",
+  "the-iron-heel",
+  "it-cant-happen-here",
+  "the-space-merchants",
+  "a-clockwork-orange",
+  "dune",
+  "do-androids-dream-of-electric-sheep",
+  "the-forever-war",
+  "high-rise",
+  "neuromancer",
+  "hyperion",
+  "the-children-of-men",
+  "snow-crash",
+  "feed",
+  "oryx-and-crake",
+]);
+
+const ADDED_BANNED = new Set([
+  ...BANNED,
+  "robot",
+  "robots",
+  "computer",
+  "computers",
+  "empire",
+  "desert",
+  "vote",
+  "votes",
+  "corporation",
+  "corporations",
+]);
+
 test("phrases stay strict and weighted", () => {
-  assert.equal(books.length, 10);
+  assert.equal(books.length, 26);
+  const titles = new Set(books.map((book) => book.title));
+  const ids = new Set<string>();
   for (const book of books) {
+    assert.equal(ids.has(book.id), false, book.id);
+    ids.add(book.id);
+    assert.ok(book.phrase.endsWith("."), book.id);
+    assert.equal(titles.has(book.neighbor), true, book.neighbor);
     assert.ok(book.themes.length > 0);
+    if (ADDED.has(book.id)) assert.ok(book.themes.length >= 2 && book.themes.length <= 3, book.id);
     for (const theme of book.themes) {
       assert.ok(theme.phrases.length > 0);
       for (const phrase of theme.phrases) {
         assert.ok(phrase.weight === 2 || phrase.weight === 3);
-        const tokens = phrase.text.toLowerCase().split(/\s+/);
-        if (tokens.length === 1) assert.equal(BANNED.has(tokens[0]), false);
+        const tokens = phrase.text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+        if (tokens.length === 1) assert.equal(BANNED.has(tokens[0]), false, phrase.text);
         assert.equal(BANNED.has(phrase.text.toLowerCase()), false);
+        if (ADDED.has(book.id)) {
+          for (const token of tokens) assert.equal(ADDED_BANNED.has(token), false, `${book.id}: ${phrase.text}`);
+        }
       }
     }
   }
