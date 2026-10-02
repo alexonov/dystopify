@@ -1,4 +1,4 @@
-import { dayDelta, formatDelta } from "@/lib/board";
+import { formatDelta } from "@/lib/board";
 import type { HistoryPoint } from "@/lib/view";
 import { Sparkline } from "./sparkline";
 
@@ -6,12 +6,13 @@ export function Figures({
   history,
   score,
   label,
+  delta,
 }: {
   history: HistoryPoint[];
   score: number;
   label: string;
+  delta: number | null;
 }) {
-  const delta = dayDelta(history);
   const quiet = score === 0;
   const changeClass = delta != null && delta > 0 ? "text-amber" : delta != null && delta < 0 ? "text-primary" : "";
 

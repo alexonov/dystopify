@@ -20,6 +20,7 @@ export type BookScoreView = {
   score: number;
   matchedCount: number;
   headlinesRead: number;
+  delta: number;
   themes: ThemePoint[];
   history: HistoryPoint[];
   listedHistory: HistoryPoint[];
@@ -56,6 +57,9 @@ export type DayView =
   | {
       kind: "ready";
       date: string;
+      windowStart: string;
+      windowEnd: string;
+      note: string;
       headlinesRead: number;
       rows: BookScoreView[];
       banner: Banner | null;

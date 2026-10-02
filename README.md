@@ -2,7 +2,7 @@
 
 A daily meter of how much of the public headline record matches twenty-six books. Each book is scored on its own scale from 0 to 100. A headline counts for a theme only when the title contains that theme's anchor word and a local entailment check scores the theme's claim at 0.90 or higher. A counted headline adds weight 2, once. The score is still `100 × (1 − e^(−raw / 8))`, rounded. Model fees are $0.
 
-The number is how much of that UTC day's headlines match the book. It is not a forecast that the plot is happening. Two books can both sit high. Nothing forces the scores to add up to 100%.
+The number on the list is the last seven days combined: the weights in that window, then the same curve. The sparkline is each day's score. The change is that seven-day score minus the seven days before it. One quiet day does not clear the rest of the week. It is not a forecast that the plot is happening. Two books can both sit high. Nothing forces the scores to add up to 100%.
 
 ## Run ingest
 

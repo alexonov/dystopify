@@ -8,7 +8,7 @@
     "start": "next start --hostname 0.0.0.0 --port 41731",
     "lint": "eslint",
     "ingest": "tsx scripts/ingest.ts",
-    "test": "tsx --test src/lib/score.test.ts src/lib/text.test.ts src/lib/rss.test.ts src/lib/recompute.test.ts src/lib/feeds.test.ts src/lib/board.test.ts"
+    "test": "tsx --test src/lib/score.test.ts src/lib/text.test.ts src/lib/rss.test.ts src/lib/recompute.test.ts src/lib/feeds.test.ts src/lib/board.test.ts src/lib/week.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

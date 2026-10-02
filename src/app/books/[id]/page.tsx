@@ -5,7 +5,8 @@ import { Figures } from "@/components/figures";
 import { MissingBook } from "@/components/missing-book";
 import { FaultLine, StatusStrip } from "@/components/status-strip";
 import { biggestMove, rankBooks } from "@/lib/board";
-import { formatBoardDate, formatTapeTime } from "@/lib/dates";
+import { formatBoardDate, formatTapeStamp } from "@/lib/dates";
+import { formatWindowSpan } from "@/lib/week";
 import { loadBook, loadDay } from "@/lib/dashboard";
 import { scoreFromRaw } from "@/lib/score";
 import type { BookScoreView, MatchView } from "@/lib/view";
@@ -30,7 +31,7 @@ function Tape({ matches }: { matches: MatchView[] }) {
     return hits.flatMap((hit) =>
       links.map((link) => ({
         key: `${match.publishedAt}-${hit.themeName}-${hit.phrase}-${link.href}`,
-        time: formatTapeTime(match.publishedAt),
+        time: formatTapeStamp(match.publishedAt),
         source: link.source,
         phrase: hit.phrase,
         theme: hit.themeName,
@@ -47,7 +48,7 @@ function Tape({ matches }: { matches: MatchView[] }) {
   return (
     <ul className="border-y border-border">
       {rows.map((row) => (
-        <li key={row.key} className="grid gap-1 border-b border-border px-2 py-1.5 font-mono text-xs last:border-b-0 sm:grid-cols-[3.5rem_1fr_9rem_10rem_7rem] sm:items-baseline sm:gap-3">
+        <li key={row.key} className="grid gap-1 border-b border-border px-2 py-1.5 font-mono text-xs last:border-b-0 sm:grid-cols-[6.5rem_1fr_9rem_10rem_7rem] sm:items-baseline sm:gap-3">
           <span className="tabular-nums text-muted-foreground">{row.time}</span>
           {row.href ? (
             <a href={row.href} target="_blank" rel="noreferrer" className="underline decoration-border underline-offset-2">
@@ -65,7 +66,7 @@ function Tape({ matches }: { matches: MatchView[] }) {
   );
 }
 
-function Panel({ book, date, matches }: { book: BookScoreView; date: string; matches: MatchView[] }) {
+function Panel({ book, note, matches }: { book: BookScoreView; note: string; matches: MatchView[] }) {
   const catalog = getBook(book.id);
   const neighbor = bookByTitle(book.neighbor);
 
@@ -78,9 +79,9 @@ function Panel({ book, date, matches }: { book: BookScoreView; date: string; mat
             <h1 className="text-xl sm:text-2xl">{book.title}</h1>
             <p className="text-sm text-muted-foreground">{book.phrase}</p>
           </div>
-          <Figures history={book.history} score={book.score} label={book.title} />
+          <Figures history={book.history} score={book.score} label={book.title} delta={book.delta} />
         </div>
-        <p className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground">{formatBoardDate(date)} UTC</p>
+        <p className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground">{note}</p>
       </div>
 
       <section className="space-y-3">
@@ -176,19 +177,22 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
       <FaultLine banner={loaded.banner} />
       {loaded.kind === "empty" ? (
         <>
-          <StatusStrip date={null} titlesRead={null} matched={null} move={null} />
+          <StatusStrip date={null} titlesRead={null} matched={null} move={null} note="No headlines yet." />
           <p className="border border-border px-3 py-6 text-center font-mono text-sm tracking-[0.22em]">NO RUN</p>
         </>
-      ) : (
+      ) : day?.kind === "ready" ? (
         <>
           <StatusStrip
-            date={formatBoardDate(loaded.date)}
-            titlesRead={loaded.book.headlinesRead}
+            date={formatWindowSpan(day.windowStart, day.windowEnd)}
+            titlesRead={day.headlinesRead}
             matched={matched}
             move={biggestMove(rows)}
+            note={day.note}
           />
-          <Panel book={loaded.book} date={loaded.date} matches={loaded.matches} />
+          <Panel book={loaded.book} note={day.note} matches={loaded.matches} />
         </>
+      ) : (
+        <p className="border border-border px-3 py-6 text-center font-mono text-sm tracking-[0.22em]">NO RUN</p>
       )}
     </main>
   );

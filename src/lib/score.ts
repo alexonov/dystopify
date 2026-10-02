@@ -80,6 +80,7 @@ export function scoreTitleGroups(
   book: Book,
   groups: TitleGroup[],
   entailment: ReadonlyMap<string, number> = new Map(),
+  min = ENTAILMENT_MIN,
 ): BookTally {
   const themePoints: Record<string, number> = {};
   for (const theme of book.themes) themePoints[theme.id] = 0;
@@ -97,7 +98,7 @@ export function scoreTitleGroups(
       const found = matchedAnchors(group.titles, rule.anchors);
       if (found.length === 0) continue;
       const probability = entailment.get(entailmentKey(book.id, theme.id, group.titleKey));
-      if (probability == null || probability < ENTAILMENT_MIN) continue;
+      if (probability == null || probability < min) continue;
       hits.push({ themeId: theme.id, phrase: found[0], weight: ANCHOR_WEIGHT });
       themePoints[theme.id] += ANCHOR_WEIGHT;
       added += ANCHOR_WEIGHT;

@@ -43,4 +43,5 @@ test("the reader uses every feed named in the plan", () => {
   assert.equal(sourceName("bbc-world"), "BBC News");
   assert.equal(sourceName("guardian-society"), "The Guardian");
   assert.equal(sourceName("dw-world"), "DW");
+  assert.equal(sourceName("gdelt-doc"), "GDELT");
 });

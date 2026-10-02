@@ -167,6 +167,10 @@ export const feeds: Feed[] = [
   },
 ];
 
+const pullSources: Record<string, string> = {
+  "gdelt-doc": "GDELT",
+};
+
 export function sourceName(feedId: string): string {
-  return feeds.find((feed) => feed.id === feedId)?.source ?? feedId;
+  return feeds.find((feed) => feed.id === feedId)?.source ?? pullSources[feedId] ?? feedId;
 }

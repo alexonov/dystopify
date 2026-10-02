@@ -7,17 +7,19 @@ export function StatusStrip({
   titlesRead,
   matched,
   move,
+  note,
 }: {
   date: string | null;
   titlesRead: number | null;
   matched: number | null;
   move: number | null;
+  note: string;
 }) {
   return (
     <div className="space-y-1">
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-y border-border py-2 font-mono sm:grid-cols-4">
         <div>
-          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">AS OF</dt>
+          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">WINDOW</dt>
           <dd className="text-sm tabular-nums">{date ?? "—"}</dd>
         </div>
         <div>
@@ -34,7 +36,7 @@ export function StatusStrip({
         </div>
       </dl>
       <p className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground">
-        How much of today&apos;s headlines match each book.
+        {note}
       </p>
     </div>
   );

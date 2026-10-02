@@ -2,6 +2,15 @@ export function utcDateString(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
+export function utcDateRangeEnding(endDate: string, count: number): string[] {
+  const end = parseUtcDate(endDate);
+  const dates: string[] = [];
+  for (let offset = count - 1; offset >= 0; offset -= 1) {
+    dates.push(utcDateString(addUtcDays(end, -offset)));
+  }
+  return dates;
+}
+
 export function addUtcDays(date: Date, days: number): Date {
   const next = new Date(date.getTime());
   next.setUTCDate(next.getUTCDate() + days);
@@ -52,6 +61,17 @@ export function formatBoardStamp(iso: string): string {
   })
     .format(new Date(iso))
     .toUpperCase();
+}
+
+export function formatTapeStamp(iso: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    hourCycle: "h23",
+  }).format(new Date(iso));
 }
 
 export function formatTapeTime(iso: string): string {

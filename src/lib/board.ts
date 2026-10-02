@@ -1,11 +1,7 @@
 import type { BookScoreView, HistoryPoint, ThemePoint } from "./view";
 
-export function listedHistory(
-  points: HistoryPoint[],
-  latestDate: string,
-  countedDates: ReadonlySet<string>,
-): HistoryPoint[] {
-  return points.filter((point) => point.date === latestDate || countedDates.has(point.date));
+export function listedHistory(points: HistoryPoint[]): HistoryPoint[] {
+  return points.filter((point) => point.score > 0);
 }
 
 export function dayDelta(history: HistoryPoint[]): number | null {
@@ -40,7 +36,7 @@ export function loudestMark(book: BookScoreView): { theme: string; hits: number 
 export function biggestMove(rows: BookScoreView[]): number | null {
   let best: number | null = null;
   for (const row of rows) {
-    const delta = dayDelta(row.history);
+    const delta = row.delta;
     if (delta == null) continue;
     if (
       best == null ||

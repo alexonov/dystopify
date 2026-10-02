@@ -25,7 +25,7 @@ export function RankRow({ book, rank }: { book: BookScoreView; rank: number }) {
               </span>
             ) : null}
           </span>
-          <Figures history={book.history} score={book.score} label={book.title} />
+          <Figures history={book.history} score={book.score} label={book.title} delta={book.delta} />
         </span>
       </Link>
     </li>

@@ -1,6 +1,7 @@
 import { books, themeRule } from "../../data/books";
 import type Database from "better-sqlite3";
 import {
+  ENTAILMENT_MIN,
   entailmentKey,
   matchedAnchors,
   premiseForAnchors,
@@ -132,6 +133,7 @@ export function recomputeDate(
   date: string,
   computedAt: string,
   entailment: ReadonlyMap<string, number> = new Map(),
+  min = ENTAILMENT_MIN,
 ): void {
   const groups = headlineGroups(db, date);
   const headlinesRead = groups.length;
@@ -160,7 +162,7 @@ export function recomputeDate(
     db.prepare(`DELETE FROM score_match_phrases WHERE date = ?`).run(date);
 
     for (const book of books) {
-      const tally = scoreTitleGroups(book, groups, entailment);
+      const tally = scoreTitleGroups(book, groups, entailment, min);
       insertScore.run({
         date,
         bookId: book.id,
