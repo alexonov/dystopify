@@ -3,10 +3,10 @@ import { books, themeRule } from "../data/books";
 import { openWriteDatabase } from "../src/lib/db";
 import { scoreEntailment } from "../src/lib/entail";
 import { entailmentPairs, headlineGroups, recomputeDate } from "../src/lib/recompute";
-import { entailmentKey, matchedAnchors } from "../src/lib/score";
+import { ENTAILMENT_MIN, entailmentKey, matchedAnchors } from "../src/lib/score";
 import { combineWindow, weekWindows } from "../src/lib/week";
 
-const CUTOFF = 0.8;
+const CUTOFF = ENTAILMENT_MIN;
 
 async function main(): Promise<void> {
   const db = openWriteDatabase();

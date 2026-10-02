@@ -790,7 +790,7 @@ export const themeRules: Record<string, ThemeRule> = {
     ],
   },
   "1984/mutable-record": {
-    hypothesis: "A government deleted, altered, or hid its own records, statistics, or history.",
+    hypothesis: "A government took down or changed the records or statistics it had published.",
     counter: "A fake image or video made by someone outside government.",
     anchors: [
       "deleted",
@@ -861,7 +861,7 @@ export const themeRules: Record<string, ThemeRule> = {
   },
   "the-trial/process-without-charge": {
     hypothesis: "This headline reports that the state is holding people in detention.",
-    anchors: ["detention", "detained", "detainee", "remand"],
+    anchors: ["detention", "detained", "detainee"],
   },
   "never-let-me-go/class-used-up": {
     hypothesis: "This headline reports that people are being trafficked.",
@@ -907,7 +907,7 @@ export const themeRules: Record<string, ThemeRule> = {
   "the-space-merchants/ads-as-government": {
     hypothesis: "Advertisers or a marketing firm are writing government policy or running a government's message.",
     counter: "A government spreading its own propaganda.",
-    anchors: ["propaganda"],
+    anchors: ["propaganda", "ad agency"],
   },
   "the-space-merchants/person-sold": {
     hypothesis: "This headline reports a legal fight over a company's privacy practices.",

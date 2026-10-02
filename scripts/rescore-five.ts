@@ -4,11 +4,11 @@ import { openWriteDatabase } from "../src/lib/db";
 import { scoreEntailment } from "../src/lib/entail";
 import { sourceName } from "../src/lib/feeds";
 import { entailmentPairs, headlineGroups, recomputeDate } from "../src/lib/recompute";
-import { counterKey, entailmentKey, matchedAnchors, scoreFromRaw } from "../src/lib/score";
+import { ENTAILMENT_MIN, counterKey, entailmentKey, matchedAnchors, scoreFromRaw } from "../src/lib/score";
 import { contentWords, storyRaw } from "../src/lib/stories";
 import { combineWindow, weekWindows } from "../src/lib/week";
 
-const CUTOFF = 0.8;
+const CUTOFF = ENTAILMENT_MIN;
 const FIVE = new Set(["1984", "brave-new-world", "the-iron-heel", "the-space-merchants", "dune"]);
 const REPORT = "/cursor/stores/bc-87d8bcef-4392-40f9-870f-3f0acffb57c2/docs/rescore-five-books.md";
 
@@ -427,11 +427,11 @@ async function main(): Promise<void> {
     lines.push("# Five-book rescore");
     lines.push("");
     lines.push(
-      `${formatRange(start, end)}. ${titleCount.toLocaleString("en-GB")} stored titles. Cutoff 0.80. No new headlines were fetched.`,
+      `${formatRange(start, end)}. ${titleCount.toLocaleString("en-GB")} stored titles. Cutoff ${CUTOFF.toFixed(2)}. No new headlines were fetched.`,
     );
     lines.push("");
     lines.push(
-      "The Iron Heel, Dune, The Space Merchants, 1984, and Brave New World now have a counts claim and a does-not-count claim on the themes named below. A headline counts when its title contains an anchor and the counts claim scores 0.80 or higher and higher than the does-not-count claim. Every other book is unchanged. The board uses this claims score.",
+      "The Iron Heel, Dune, The Space Merchants, 1984, and Brave New World now have a counts claim and a does-not-count claim on the themes named below. A headline counts when its title contains an anchor and the counts claim scores at the floor or higher, and higher than the does-not-count claim. Every other book is unchanged. The board uses this claims score.",
     );
     lines.push("");
     lines.push(

@@ -19,7 +19,6 @@ import { canonicalLink, itemKey, titleKey } from "../src/lib/text";
 import { combineWindow, weekWindows } from "../src/lib/week";
 import type { StoredHeadline } from "../src/lib/recompute";
 
-const FLOOR = 0.8;
 const GAP_MS = 6500;
 const GKG_HOURS = ["000000", "060000", "120000", "180000"];
 
@@ -245,18 +244,10 @@ async function main(): Promise<void> {
       recomputeDate(db, day, fetchedAt, scores, ENTAILMENT_MIN);
     }
 
-    let threshold = ENTAILMENT_MIN;
-    let above = booksAbove(db, today);
+    const threshold = ENTAILMENT_MIN;
+    const above = booksAbove(db, today);
     const zeros = books.length - above;
     console.log(`at ${threshold}: above ${above} zeros ${zeros}`);
-    if (zeros > 20) {
-      threshold = FLOOR;
-      for (const day of days) {
-        recomputeDate(db, day, fetchedAt, maps.get(day) ?? new Map(), threshold);
-      }
-      above = booksAbove(db, today);
-      console.log(`at ${threshold}: above ${above} zeros ${books.length - above}`);
-    }
 
     const { current } = weekWindows(today);
     const counted = db
@@ -317,7 +308,7 @@ async function main(): Promise<void> {
       urlExample: gdeltArtListUrl(today),
       gkgHours: GKG_HOURS,
       threshold,
-      usedFloor: threshold < ENTAILMENT_MIN,
+      usedFloor: false,
       above,
       zeros: books.length - above,
       days: perDay,

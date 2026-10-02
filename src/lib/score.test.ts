@@ -173,17 +173,17 @@ test("the counts claim has to beat its twin", () => {
     [entailmentKey(book.id, "labor-crushed", "strike"), 0.95],
     [counterKey(book.id, "labor-crushed", "strike"), 0.97],
   ]);
-  assert.equal(scoreTitleGroups(book, groups, loses, 0.8).raw, 0);
+  assert.equal(scoreTitleGroups(book, groups, loses).raw, 0);
   const tie = new Map([
     [entailmentKey(book.id, "labor-crushed", "strike"), 0.95],
     [counterKey(book.id, "labor-crushed", "strike"), 0.95],
   ]);
-  assert.equal(scoreTitleGroups(book, groups, tie, 0.8).raw, 0);
+  assert.equal(scoreTitleGroups(book, groups, tie).raw, 0);
   const wins = new Map([
     [entailmentKey(book.id, "labor-crushed", "strike"), 0.95],
     [counterKey(book.id, "labor-crushed", "strike"), 0.4],
   ]);
-  assert.equal(scoreTitleGroups(book, groups, wins, 0.8).raw, 2);
+  assert.equal(scoreTitleGroups(book, groups, wins).raw, 2);
 });
 
 test("two shared content words are one story and later stories add half as much", () => {

@@ -93,7 +93,7 @@ test("gdelt artlist keeps the title and the link", () => {
   assert.equal(titleFromGkgLine(translated), null);
 });
 
-test("a score under 0.90 counts only when the floor is open", () => {
+test("a score under 0.90 does not count", () => {
   const book = books[0];
   const groups: TitleGroup[] = [
     {
@@ -107,6 +107,10 @@ test("a score under 0.90 counts only when the floor is open", () => {
     [entailmentKey(book.id, "surveillance", "morocco"), 0.85],
     [counterKey(book.id, "surveillance", "morocco"), 0.1],
   ]);
-  assert.equal(scoreTitleGroups(book, groups, scores, 0.9).raw, 0);
-  assert.equal(scoreTitleGroups(book, groups, scores, 0.8).raw, 2);
+  assert.equal(scoreTitleGroups(book, groups, scores).raw, 0);
+  const high = new Map([
+    [entailmentKey(book.id, "surveillance", "morocco"), 0.95],
+    [counterKey(book.id, "surveillance", "morocco"), 0.1],
+  ]);
+  assert.equal(scoreTitleGroups(book, groups, high).raw, 2);
 });
