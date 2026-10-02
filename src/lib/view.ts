@@ -51,7 +51,7 @@ export type MatchView = {
 };
 
 export type DayView =
-  | { kind: "empty"; banner: Banner | null }
+  | { kind: "empty"; banner: Banner | null; lastSuccessAt: string | null }
   | {
       kind: "ready";
       date: string;
@@ -59,4 +59,5 @@ export type DayView =
       ranked: BookScoreView[];
       quiet: BookScoreView[];
       banner: Banner | null;
+      lastSuccessAt: string | null;
     };

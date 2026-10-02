@@ -31,6 +31,19 @@ type RunRow = {
   ok: number;
 };
 
+function readLastSuccess(db: NonNullable<ReturnType<typeof openReadDatabase>>): string | null {
+  const success = db
+    .prepare(
+      `SELECT finished_at
+       FROM runs
+       WHERE ok = 1 AND finished_at IS NOT NULL
+       ORDER BY id DESC
+       LIMIT 1`,
+    )
+    .get() as { finished_at: string } | undefined;
+  return success?.finished_at ?? null;
+}
+
 function readBanner(db: NonNullable<ReturnType<typeof openReadDatabase>>): Banner | null {
   const latest = db
     .prepare(
@@ -111,12 +124,13 @@ function bookViews(
 export async function loadDay(): Promise<DayView> {
   await connection();
   const db = openReadDatabase();
-  if (!db) return { kind: "empty", banner: null };
+  if (!db) return { kind: "empty", banner: null, lastSuccessAt: null };
   const banner = readBanner(db);
+  const lastSuccessAt = readLastSuccess(db);
   const latest = db.prepare(`SELECT date FROM scores ORDER BY date DESC LIMIT 1`).get() as
     | { date: string }
     | undefined;
-  if (!latest) return { kind: "empty", banner };
+  if (!latest) return { kind: "empty", banner, lastSuccessAt };
 
   const scoreRows = db
     .prepare(
@@ -153,30 +167,53 @@ export async function loadDay(): Promise<DayView> {
     ranked,
     quiet,
     banner,
+    lastSuccessAt,
   };
 }
 
 export async function loadBook(id: string): Promise<
   | { kind: "missing" }
-  | { kind: "empty"; banner: Banner | null; bookTitle: string }
+  | { kind: "empty"; banner: Banner | null; bookTitle: string; lastSuccessAt: string | null }
   | {
       kind: "ready";
       date: string;
       book: BookScoreView;
       matches: MatchView[];
       banner: Banner | null;
+      lastSuccessAt: string | null;
     }
 > {
   const book = getBook(id);
   if (!book) return { kind: "missing" };
   const day = await loadDay();
-  if (day.kind === "empty") return { kind: "empty", banner: day.banner, bookTitle: book.title };
+  if (day.kind === "empty") {
+    return {
+      kind: "empty",
+      banner: day.banner,
+      bookTitle: book.title,
+      lastSuccessAt: day.lastSuccessAt,
+    };
+  }
 
   const entry = [...day.ranked, ...day.quiet].find((item) => item.id === id);
-  if (!entry) return { kind: "empty", banner: day.banner, bookTitle: book.title };
+  if (!entry) {
+    return {
+      kind: "empty",
+      banner: day.banner,
+      bookTitle: book.title,
+      lastSuccessAt: day.lastSuccessAt,
+    };
+  }
 
   const db = openReadDatabase();
-  if (!db) return { kind: "empty", banner: day.banner, bookTitle: book.title };
+  if (!db) {
+    return {
+      kind: "empty",
+      banner: day.banner,
+      bookTitle: book.title,
+      lastSuccessAt: day.lastSuccessAt,
+    };
+  }
 
   const matchRows = db
     .prepare(
@@ -270,5 +307,12 @@ export async function loadBook(id: string): Promise<
     };
   });
 
-  return { kind: "ready", date: day.date, book: entry, matches, banner: day.banner };
+  return {
+    kind: "ready",
+    date: day.date,
+    book: entry,
+    matches,
+    banner: day.banner,
+    lastSuccessAt: day.lastSuccessAt,
+  };
 }

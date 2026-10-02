@@ -30,6 +30,39 @@ export function formatShortUtcDate(isoDate: string): string {
   }).format(parseUtcDate(isoDate));
 }
 
+export function formatBoardDate(isoDate: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  })
+    .format(parseUtcDate(isoDate))
+    .toUpperCase();
+}
+
+export function formatBoardStamp(iso: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    hourCycle: "h23",
+  })
+    .format(new Date(iso))
+    .toUpperCase();
+}
+
+export function formatTapeTime(iso: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "UTC",
+    hourCycle: "h23",
+  }).format(new Date(iso));
+}
+
 export function formatUtcTimestamp(iso: string): string {
   const formatted = new Intl.DateTimeFormat("en-GB", {
     day: "numeric",

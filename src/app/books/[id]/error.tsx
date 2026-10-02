@@ -15,13 +15,11 @@ export default function BookError({
   }, [error]);
 
   return (
-    <main>
-      <h1 className="font-heading text-4xl tracking-tight">This breakdown could not be read.</h1>
-      <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
-        The page only reads the local file. The failure did not fetch news.
-      </p>
-      <Button type="button" size="lg" className="mt-6 h-11 px-4" onClick={() => retry()}>
-        Try again
+    <main className="space-y-4">
+      <p className="font-mono text-[10px] tracking-[0.22em] text-amber">READ FAIL</p>
+      <h1 className="font-mono text-2xl tracking-wide">PANEL UNREADABLE</h1>
+      <Button type="button" size="lg" className="h-11 px-4 font-mono" onClick={() => retry()}>
+        RETRY
       </Button>
     </main>
   );
