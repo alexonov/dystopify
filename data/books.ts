@@ -772,12 +772,12 @@ export function ruleKey(bookId: string, themeId: string): string {
 
 export const themeRules: Record<string, ThemeRule> = {
   "1984/surveillance": {
-    hypothesis: "This headline reports that authorities are using surveillance.",
-    anchors: ["surveillance", "spyware", "wiretap"],
+    hypothesis: "This headline reports that people are being spied on.",
+    anchors: ["surveillance", "spy", "snooping", "spyware"],
   },
   "1984/mutable-record": {
-    hypothesis: "This headline reports that an official record was rewritten after the fact.",
-    anchors: ["doctored", "falsified", "deepfake"],
+    hypothesis: "This headline reports that a fake image or recording is being presented as real.",
+    anchors: ["deepfake", "doctored", "falsified"],
   },
   "1984/permanent-enemy": {
     hypothesis: "This headline reports that a government is maintaining a permanent enemy.",
@@ -820,24 +820,24 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["theocracy", "fatwa", "sterilization"],
   },
   "the-trial/process-without-charge": {
-    hypothesis: "This headline reports that someone is being held without a charge.",
-    anchors: ["detention", "detainee", "remand"],
+    hypothesis: "This headline reports that the state is holding people in detention.",
+    anchors: ["detention", "detained", "detainee", "remand"],
   },
   "never-let-me-go/class-used-up": {
-    hypothesis: "This headline reports that a class of people is being used up.",
-    anchors: ["trafficking", "harvesting", "bondage"],
+    hypothesis: "This headline reports that people are being trafficked.",
+    anchors: ["trafficking", "harvesting"],
   },
   "parable-of-the-sower/gated-safety": {
-    hypothesis: "This headline reports that safety is being sold behind a private gate.",
-    anchors: ["militia", "refugee", "gated"],
+    hypothesis: "This headline reports that refugees are losing protection.",
+    anchors: ["refugee"],
   },
   "the-time-machine/leisured-class": {
     hypothesis: "This headline reports that a leisured class is living off other people's work.",
     anchors: ["rentier", "leisure", "idle"],
   },
   "the-time-machine/class-consumed": {
-    hypothesis: "This headline reports that workers are being kept in sweatshop conditions.",
-    anchors: ["sweatshop", "peonage", "bonded"],
+    hypothesis: "This headline reports that employers broke minimum-wage rules.",
+    anchors: ["wage"],
   },
   "the-island-of-doctor-moreau/flesh-remade": {
     hypothesis: "This headline reports that an authority is surgically altering people's bodies without consent.",
@@ -852,8 +852,8 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["oligarchy", "oligarch", "plutocracy"],
   },
   "the-iron-heel/labor-crushed": {
-    hypothesis: "This headline reports that the government is crushing a union.",
-    anchors: ["union", "strike", "picket"],
+    hypothesis: "This headline reports labor unrest.",
+    anchors: ["strike", "union", "picket"],
   },
   "it-cant-happen-here/elected-strongman": {
     hypothesis: "This headline reports that an election installed a dictator.",
@@ -864,12 +864,12 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["militia", "paramilitary", "vigilante"],
   },
   "the-space-merchants/ads-as-government": {
-    hypothesis: "This headline reports that government propaganda is functioning as the state.",
-    anchors: ["propaganda", "astroturf"],
+    hypothesis: "This headline reports that a state is spreading propaganda.",
+    anchors: ["propaganda"],
   },
   "the-space-merchants/person-sold": {
-    hypothesis: "This headline reports that a person's private data is being sold.",
-    anchors: ["broker", "privacy"],
+    hypothesis: "This headline reports a legal fight over a company's privacy practices.",
+    anchors: ["privacy"],
   },
   "a-clockwork-orange/aversion-conditioning": {
     hypothesis: "This headline reports that aversion therapy is being used to remove someone's ability to choose.",
@@ -880,8 +880,8 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["reeducation", "indoctrination"],
   },
   "dune/resource-dependence": {
-    hypothesis: "This headline reports that a powerful state cannot give up a strategic resource.",
-    anchors: ["embargo", "chokepoint", "mineral"],
+    hypothesis: "This headline reports that a government is building a fuel pipeline.",
+    anchors: ["pipeline"],
   },
   "dune/religion-as-arm": {
     hypothesis: "This headline reports that a ruling family is using religion as a military force.",
@@ -900,24 +900,24 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["clone", "embryo", "crispr"],
   },
   "the-forever-war/life-consumed": {
-    hypothesis: "This headline reports that repeated deployments are consuming a soldier's life.",
-    anchors: ["deployment", "redeployment", "deployments"],
+    hypothesis: "This headline reports opposition to military conscription.",
+    anchors: ["conscription"],
   },
   "the-forever-war/replaced-return": {
     hypothesis: "This headline reports that veterans came home to a country that had moved on without them.",
     anchors: ["veteran", "veterans", "homecoming"],
   },
   "high-rise/building-polity": {
-    hypothesis: "This headline reports that a residential building is governing its own residents.",
-    anchors: ["tenants", "landlord", "condominium"],
+    hypothesis: "This headline reports a dispute over tenants' rights.",
+    anchors: ["tenants"],
   },
   "high-rise/height-as-rank": {
     hypothesis: "This headline reports that a resident's floor is being treated as their class.",
     anchors: ["penthouse", "mezzanine"],
   },
   "neuromancer/firm-as-state": {
-    hypothesis: "This headline reports that a private company is exercising the powers of a state.",
-    anchors: ["sovereignty", "extraterritorial"],
+    hypothesis: "This headline reports objections to a company holding health data.",
+    anchors: ["palantir"],
   },
   "neuromancer/body-left-behind": {
     hypothesis: "This headline reports that a person is leaving their body to enter a network.",
@@ -952,8 +952,8 @@ export const themeRules: Record<string, ThemeRule> = {
     anchors: ["neuromarketing", "subliminal"],
   },
   "feed/damaged-market": {
-    hypothesis: "This headline reports that a product was designed to addict its users.",
-    anchors: ["addiction", "addictive"],
+    hypothesis: "This headline reports that social media is addictive.",
+    anchors: ["addiction"],
   },
   "oryx-and-crake/designed-extinction": {
     hypothesis: "This headline reports that an extinction was deliberately engineered.",

@@ -33,10 +33,17 @@ export default async function Home() {
         note={day.note}
       />
       <ol className="list-none">
-        {rows.map((book, index) => (
-          <RankRow key={book.id} book={book} rank={index + 1} />
-        ))}
+        {rows
+          .filter((book) => book.score > 0)
+          .map((book, index) => (
+            <RankRow key={book.id} book={book} rank={index + 1} />
+          ))}
       </ol>
+      {rows.length - matched > 0 ? (
+        <p className="border-b border-border py-2 font-mono text-xs text-muted-foreground">
+          {rows.length - matched} books at 0
+        </p>
+      ) : null}
     </main>
   );
 }
