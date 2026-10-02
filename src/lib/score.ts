@@ -1,4 +1,5 @@
 import { RAW_SCALE, themeRule, type Book } from "../../data/books";
+import { contentWords, storyClusters, storyWeight } from "./stories";
 
 export const ANCHOR_WEIGHT = 2;
 export const ENTAILMENT_MIN = 0.9;
@@ -80,6 +81,16 @@ export function matchTitle(title: string, book: Book): { weight: number; hits: P
   return { weight, hits };
 }
 
+type Qualified = {
+  group: TitleGroup;
+  themeId: string;
+  anchor: string;
+};
+
+function byTime(left: Qualified, right: Qualified): number {
+  return left.group.publishedAt.localeCompare(right.group.publishedAt) || left.group.titleKey.localeCompare(right.group.titleKey);
+}
+
 export function scoreTitleGroups(
   book: Book,
   groups: TitleGroup[],
@@ -89,13 +100,8 @@ export function scoreTitleGroups(
   const themePoints: Record<string, number> = {};
   for (const theme of book.themes) themePoints[theme.id] = 0;
 
-  let raw = 0;
-  const matches: ScoredMatch[] = [];
-
+  const qualified: Qualified[] = [];
   for (const group of groups) {
-    const hits: PhraseHit[] = [];
-    let added = 0;
-
     for (const theme of book.themes) {
       const rule = themeRule(book.id, theme.id);
       if (!rule) continue;
@@ -107,28 +113,51 @@ export function scoreTitleGroups(
         const ordinary = entailment.get(counterKey(book.id, theme.id, group.titleKey));
         if (ordinary == null || probability <= ordinary) continue;
       }
-      hits.push({ themeId: theme.id, phrase: found[0], weight: ANCHOR_WEIGHT });
-      themePoints[theme.id] += ANCHOR_WEIGHT;
-      added += ANCHOR_WEIGHT;
+      qualified.push({ group, themeId: theme.id, anchor: found[0] });
     }
+  }
 
-    if (added <= 0) continue;
-    raw += added;
-    matches.push({
-      titleKey: group.titleKey,
-      title: group.displayTitle,
-      publishedAt: group.publishedAt,
-      weight: added,
-      hits,
+  const carried = new Map<string, number>();
+  const hitsByTitle = new Map<string, PhraseHit[]>();
+  for (const theme of book.themes) {
+    const rows = qualified.filter((item) => item.themeId === theme.id);
+    const anchors = themeRule(book.id, theme.id)?.anchors ?? [];
+    const indexed = rows.map((row) => ({
+      row,
+      words: contentWords(row.group.displayTitle, anchors),
+    }));
+    const clusters = storyClusters(indexed)
+      .map((indexes) => indexes.map((index) => indexed[index].row).sort(byTime))
+      .sort((left, right) => byTime(left[0], right[0]));
+    themePoints[theme.id] = storyWeight(clusters.length);
+    clusters.forEach((cluster, storyIndex) => {
+      const weight = ANCHOR_WEIGHT / 2 ** storyIndex;
+      const lead = cluster[0];
+      carried.set(lead.group.titleKey, (carried.get(lead.group.titleKey) ?? 0) + weight);
+      for (const row of cluster) {
+        const hits = hitsByTitle.get(row.group.titleKey) ?? [];
+        hits.push({ themeId: row.themeId, phrase: row.anchor, weight: ANCHOR_WEIGHT });
+        hitsByTitle.set(row.group.titleKey, hits);
+      }
     });
   }
 
+  const seen = new Map<string, TitleGroup>();
+  for (const item of qualified) seen.set(item.group.titleKey, item.group);
+  const matches: ScoredMatch[] = [...seen.values()].map((group) => ({
+    titleKey: group.titleKey,
+    title: group.displayTitle,
+    publishedAt: group.publishedAt,
+    weight: carried.get(group.titleKey) ?? 0,
+    hits: hitsByTitle.get(group.titleKey) ?? [],
+  }));
   matches.sort(
     (a, b) =>
       b.weight - a.weight ||
       b.publishedAt.localeCompare(a.publishedAt) ||
       a.title.localeCompare(b.title),
   );
+  const raw = book.themes.reduce((sum, theme) => sum + (themePoints[theme.id] ?? 0), 0);
 
   return {
     raw,

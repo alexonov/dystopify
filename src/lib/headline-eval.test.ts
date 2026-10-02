@@ -222,7 +222,7 @@ test("locked headline cases", async () => {
   const lines = [
     "# Headline eval results",
     "",
-    `L1–L13 ran through the current matcher. A headline counts when the title has an anchor and the counts claim scores ${ENTAILMENT_MIN.toFixed(2)} or higher, and higher than the does-not-count claim when the theme has one. The scoring rules were not changed.`,
+    `L1–L13 ran through the current matcher. A headline counts when the title has an anchor and the counts claim scores ${ENTAILMENT_MIN.toFixed(2)} or higher, and higher than the does-not-count claim when the theme has one. Within one theme, headlines that share two words besides the anchor are one story. The first story adds 2. Each further story adds half as much.`,
     "",
     `${passed} of ${rows.length} passed.`,
     "",

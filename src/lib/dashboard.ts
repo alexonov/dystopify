@@ -1,8 +1,10 @@
 import { connection } from "next/server";
-import { getBook, books } from "../../data/books";
+import { getBook, books, themeRule } from "../../data/books";
 import { listedHistory } from "./board";
 import { openReadDatabase } from "./db";
 import { sourceName } from "./feeds";
+import { scoreFromRaw } from "./score";
+import { contentWords, storyRaw } from "./stories";
 import type { Banner, BookScoreView, DayView, MatchView } from "./view";
 import { combineWindow, formatWindowNote, weekWindows } from "./week";
 
@@ -15,18 +17,35 @@ type ScoreRow = {
   headlines_read: number;
 };
 
-type ThemeRow = {
-  date: string;
-  book_id: string;
-  theme_id: string;
-  points: number;
-};
-
 type RunRow = {
   finished_at: string;
   error: string | null;
   ok: number;
 };
+
+type StoryRow = {
+  date: string;
+  book_id: string;
+  theme_id: string;
+  title: string;
+};
+
+function storyWindow(bookId: string, dates: Set<string>, rows: StoryRow[]): { raw: number; themes: Map<string, number> } {
+  const book = getBook(bookId);
+  const themes = new Map<string, number>();
+  if (!book) return { raw: 0, themes };
+  let raw = 0;
+  for (const theme of book.themes) {
+    const titles = rows
+      .filter((row) => row.book_id === bookId && row.theme_id === theme.id && dates.has(row.date))
+      .map((row) => row.title);
+    const anchors = themeRule(bookId, theme.id)?.anchors ?? [];
+    const points = storyRaw(titles.map((title) => ({ words: contentWords(title, anchors) })));
+    themes.set(theme.id, points);
+    raw += points;
+  }
+  return { raw, themes };
+}
 
 function readLastSuccess(db: NonNullable<ReturnType<typeof openReadDatabase>>): string | null {
   const success = db
@@ -71,19 +90,13 @@ function readBanner(db: NonNullable<ReturnType<typeof openReadDatabase>>): Banne
 function bookViews(
   endDate: string,
   scoreRows: ScoreRow[],
-  themeRows: ThemeRow[],
+  storyRows: StoryRow[],
   headlinesRead: number,
 ): BookScoreView[] {
   const { current, previous } = weekWindows(endDate);
   const byDay = new Map(scoreRows.map((row) => [`${row.book_id}\0${row.date}`, row]));
   const currentDates = new Set(current);
-  const themes = new Map<string, Map<string, number>>();
-  for (const row of themeRows) {
-    if (!currentDates.has(row.date)) continue;
-    const bookThemes = themes.get(row.book_id) ?? new Map<string, number>();
-    bookThemes.set(row.theme_id, (bookThemes.get(row.theme_id) ?? 0) + row.points);
-    themes.set(row.book_id, bookThemes);
-  }
+  const previousDates = new Set(previous);
 
   return books.map((book) => {
     const currentDays = current.map((date) => {
@@ -100,9 +113,10 @@ function bookViews(
       return { raw: row?.raw ?? 0, matched: row?.matched_count ?? 0 };
     });
     const week = combineWindow(currentDays);
-    const prior = combineWindow(previousDays);
-    const themeMap = themes.get(book.id) ?? new Map<string, number>();
+    const currentStory = storyWindow(book.id, currentDates, storyRows);
+    const priorStory = storyWindow(book.id, previousDates, storyRows);
     const history = currentDays.map((day) => ({ date: day.date, score: day.score }));
+    const score = scoreFromRaw(currentStory.raw);
     return {
       id: book.id,
       title: book.title,
@@ -110,15 +124,15 @@ function bookViews(
       year: book.year,
       phrase: book.phrase,
       neighbor: book.neighbor,
-      raw: week.raw,
-      score: week.score,
+      raw: currentStory.raw,
+      score,
       matchedCount: week.matched,
       headlinesRead,
-      delta: week.score - prior.score,
+      delta: score - scoreFromRaw(priorStory.raw),
       themes: book.themes.map((theme) => ({
         id: theme.id,
         name: theme.name,
-        points: themeMap.get(theme.id) ?? 0,
+        points: currentStory.themes.get(theme.id) ?? 0,
       })),
       history,
       listedHistory: listedHistory(history),
@@ -148,13 +162,15 @@ export async function loadDay(): Promise<DayView> {
        WHERE date >= ? AND date <= ?`,
     )
     .all(spanStart, windowEnd) as ScoreRow[];
-  const themeRows = db
+  const storyRows = db
     .prepare(
-      `SELECT date, book_id, theme_id, points
-       FROM score_themes
-       WHERE date >= ? AND date <= ?`,
+      `SELECT m.date AS date, m.book_id AS book_id, m.title AS title, p.theme_id AS theme_id
+       FROM score_matches m
+       JOIN score_match_phrases p
+         ON p.date = m.date AND p.book_id = m.book_id AND p.title_key = m.title_key
+       WHERE m.date >= ? AND m.date <= ?`,
     )
-    .all(windowStart, windowEnd) as ThemeRow[];
+    .all(spanStart, windowEnd) as StoryRow[];
   const titles = db
     .prepare(
       `SELECT COUNT(DISTINCT title_key) AS n
@@ -162,7 +178,7 @@ export async function loadDay(): Promise<DayView> {
        WHERE published_date >= ? AND published_date <= ?`,
     )
     .get(windowStart, windowEnd) as { n: number };
-  const rows = bookViews(windowEnd, scoreRows, themeRows, titles.n);
+  const rows = bookViews(windowEnd, scoreRows, storyRows, titles.n);
 
   return {
     kind: "ready",

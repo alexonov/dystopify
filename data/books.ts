@@ -5,8 +5,9 @@
  * theme's anchor words as a whole word, and the local entailment model
  * scores that theme's hypothesis at 0.90 or higher. When the theme has a
  * counter-claim, the hypothesis must also score higher than that claim.
- * A counted headline adds weight 2 for that theme, once. The score is
- * round(100 * (1 - e^(-raw / RAW_SCALE))).
+ * Within one theme, headlines that share two words besides the anchor are
+ * one story. The first story adds 2. Each further story adds half as much.
+ * The score is round(100 * (1 - e^(-raw / RAW_SCALE))).
  */
 
 export type Phrase = {

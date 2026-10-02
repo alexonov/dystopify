@@ -207,6 +207,55 @@ test("two shared content words are one story and later stories add half as much"
   assert.equal(storyRaw([{ words: canada }, { words: fast }]), 2);
 });
 
+test("one story adds 2 and the next story in that theme adds half", () => {
+  const book = books.find((item) => item.id === "the-space-merchants");
+  assert.ok(book);
+  const same: TitleGroup[] = [
+    {
+      titleKey: "nm",
+      titles: ["New Mexico jury finds Facebook liable for deceiving users about privacy protections"],
+      displayTitle: "New Mexico jury finds Facebook liable for deceiving users about privacy protections",
+      publishedAt: "2026-09-26T12:00:00.000Z",
+    },
+    {
+      titleKey: "jury",
+      titles: ["Jury: Facebook liable for deceiving users about privacy protections"],
+      displayTitle: "Jury: Facebook liable for deceiving users about privacy protections",
+      publishedAt: "2026-09-27T12:00:00.000Z",
+    },
+  ];
+  const sameScores = new Map([
+    [entailmentKey(book.id, "person-sold", "nm"), 0.99],
+    [entailmentKey(book.id, "person-sold", "jury"), 0.99],
+  ]);
+  const paired = scoreTitleGroups(book, same, sameScores);
+  assert.equal(paired.themePoints["person-sold"], 2);
+  assert.equal(paired.raw, 2);
+  assert.equal(paired.matchedCount, 2);
+
+  const apart: TitleGroup[] = [
+    {
+      titleKey: "hospital",
+      titles: ["Hospital fined over patient privacy breach"],
+      displayTitle: "Hospital fined over patient privacy breach",
+      publishedAt: "2026-09-26T12:00:00.000Z",
+    },
+    {
+      titleKey: "school",
+      titles: ["School updates its privacy policy"],
+      displayTitle: "School updates its privacy policy",
+      publishedAt: "2026-09-27T12:00:00.000Z",
+    },
+  ];
+  const apartScores = new Map([
+    [entailmentKey(book.id, "person-sold", "hospital"), 0.99],
+    [entailmentKey(book.id, "person-sold", "school"), 0.99],
+  ]);
+  const separate = scoreTitleGroups(book, apart, apartScores);
+  assert.equal(separate.themePoints["person-sold"], 3);
+  assert.equal(separate.raw, 3);
+});
+
 test("a repeated title counts once", () => {
   const groups: TitleGroup[] = [
     {

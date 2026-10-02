@@ -134,7 +134,7 @@ export function storyWeight(storyCount: number): number {
   return total;
 }
 
-export function storyRaw(groups: { words: Set<string> }[]): number {
+export function storyClusters(groups: { words: Set<string> }[]): number[][] {
   const parent = groups.map((_, index) => index);
   const find = (index: number): number => {
     let cursor = index;
@@ -147,9 +147,21 @@ export function storyRaw(groups: { words: Set<string> }[]): number {
   for (let i = 0; i < groups.length; i += 1) {
     for (let j = i + 1; j < groups.length; j += 1) {
       if (shared(groups[i].words, groups[j].words) < 2) continue;
-      parent[find(i)] = find(j);
+      const left = find(i);
+      const right = find(j);
+      if (left !== right) parent[left] = right;
     }
   }
-  const clusters = new Set(groups.map((_, index) => find(index)));
-  return storyWeight(clusters.size);
+  const buckets = new Map<number, number[]>();
+  for (let index = 0; index < groups.length; index += 1) {
+    const root = find(index);
+    const list = buckets.get(root) ?? [];
+    list.push(index);
+    buckets.set(root, list);
+  }
+  return [...buckets.values()];
+}
+
+export function storyRaw(groups: { words: Set<string> }[]): number {
+  return storyWeight(storyClusters(groups).length);
 }
