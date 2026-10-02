@@ -163,7 +163,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
 
   const day = loaded.kind === "ready" ? await loadDay() : null;
   const rows = day && day.kind === "ready" ? rankBooks(day.rows) : [];
-  const awake = rows.filter((book) => book.score > 0).length;
+  const matched = rows.filter((book) => book.score > 0).length;
 
   return (
     <main className="space-y-3">
@@ -176,7 +176,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
       <FaultLine banner={loaded.banner} />
       {loaded.kind === "empty" ? (
         <>
-          <StatusStrip date={null} titlesRead={null} awake={null} move={null} />
+          <StatusStrip date={null} titlesRead={null} matched={null} move={null} />
           <p className="border border-border px-3 py-6 text-center font-mono text-sm tracking-[0.22em]">NO RUN</p>
         </>
       ) : (
@@ -184,7 +184,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
           <StatusStrip
             date={formatBoardDate(loaded.date)}
             titlesRead={loaded.book.headlinesRead}
-            awake={awake}
+            matched={matched}
             move={biggestMove(rows)}
           />
           <Panel book={loaded.book} date={loaded.date} matches={loaded.matches} />

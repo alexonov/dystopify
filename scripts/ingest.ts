@@ -3,7 +3,8 @@ import { addUtcDays, utcDateString } from "../src/lib/dates";
 import { openWriteDatabase } from "../src/lib/db";
 import { parseFeed } from "../src/lib/rss";
 import { canonicalLink, itemKey, titleKey } from "../src/lib/text";
-import { deleteOlderThan, hasDayMaterial, insertHeadlines, recomputeDate } from "../src/lib/recompute";
+import { scoreEntailment } from "../src/lib/entail";
+import { deleteOlderThan, entailmentPairs, hasDayMaterial, headlineGroups, insertHeadlines, recomputeDate } from "../src/lib/recompute";
 import type { StoredHeadline } from "../src/lib/recompute";
 
 const RETENTION_DAYS = 45;
@@ -93,21 +94,23 @@ async function main(): Promise<void> {
     const write = db.transaction(() => {
       added = insertHeadlines(db, rows, computedAt);
       deleteOlderThan(db, cutoff);
-      recomputeDate(db, today, computedAt);
-      scored.push(today);
-      if (hasDayMaterial(db, yesterday)) {
-        recomputeDate(db, yesterday, computedAt);
-        scored.push(yesterday);
-      }
-      db.prepare(`UPDATE runs SET finished_at = ?, items_added = ?, error = ?, ok = ? WHERE id = ?`).run(
-        new Date().toISOString(),
-        added,
-        error,
-        error ? 0 : 1,
-        runId,
-      );
     });
     write();
+    const todayScores = await scoreEntailment(entailmentPairs(headlineGroups(db, today)));
+    recomputeDate(db, today, computedAt, todayScores);
+    scored.push(today);
+    if (hasDayMaterial(db, yesterday)) {
+      const yesterdayScores = await scoreEntailment(entailmentPairs(headlineGroups(db, yesterday)));
+      recomputeDate(db, yesterday, computedAt, yesterdayScores);
+      scored.push(yesterday);
+    }
+    db.prepare(`UPDATE runs SET finished_at = ?, items_added = ?, error = ?, ok = ? WHERE id = ?`).run(
+      new Date().toISOString(),
+      added,
+      error,
+      error ? 0 : 1,
+      runId,
+    );
     console.log(`SUMMARY ${JSON.stringify({ added, failed: failures, scored })}`);
     if (failures.length > 0) process.exitCode = 1;
   } catch (error) {

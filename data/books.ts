@@ -1,9 +1,10 @@
 /**
- * Books, themes, and phrases for the daily meter.
+ * Books, themes, phrases, and anchor words for the daily meter.
  *
- * Matching is case-insensitive, on the headline title only, with word
- * boundaries. Weights are 2 or 3. A title contributes its strongest matched
- * weight to a book once. The score is
+ * A headline counts for a theme only when its title contains one of that
+ * theme's anchor words as a whole word, and the local entailment model
+ * scores that theme's hypothesis at 0.90 or higher. A counted headline
+ * adds weight 2 for that theme, once. The score is
  * round(100 * (1 - e^(-raw / RAW_SCALE))).
  */
 
@@ -759,6 +760,214 @@ export const books: Book[] = [
     ],
   },
 ];
+
+export type ThemeRule = {
+  hypothesis: string;
+  anchors: string[];
+};
+
+export function ruleKey(bookId: string, themeId: string): string {
+  return `${bookId}/${themeId}`;
+}
+
+export const themeRules: Record<string, ThemeRule> = {
+  "1984/surveillance": {
+    hypothesis: "This headline reports that authorities are using surveillance.",
+    anchors: ["surveillance", "spyware", "wiretap"],
+  },
+  "1984/mutable-record": {
+    hypothesis: "This headline reports that an official record was rewritten after the fact.",
+    anchors: ["doctored", "falsified", "deepfake"],
+  },
+  "1984/permanent-enemy": {
+    hypothesis: "This headline reports that a government is maintaining a permanent enemy.",
+    anchors: ["enemy", "foe"],
+  },
+  "brave-new-world/chemical-peace": {
+    hypothesis: "This headline reports that a drug is being used to keep a population calm.",
+    anchors: ["sedative", "opioid", "tranquilizer", "tranquiliser"],
+  },
+  "brave-new-world/conditioning": {
+    hypothesis: "This headline reports that a government is conditioning people's behavior.",
+    anchors: ["conditioning", "nudge", "reeducation"],
+  },
+  "brave-new-world/managed-pleasure": {
+    hypothesis: "This headline reports that pleasure is being supplied so people stop resisting.",
+    anchors: ["dopamine", "hedonism", "pleasure"],
+  },
+  "we/transparency": {
+    hypothesis: "This headline reports that people must register under their real names.",
+    anchors: ["transparency", "registration"],
+  },
+  "we/engineered-sameness": {
+    hypothesis: "This headline reports that a social-credit system is scoring citizens.",
+    anchors: ["biometric", "sameness"],
+  },
+  "minority-report/prediction-as-guilt": {
+    hypothesis: "This headline reports that police detained someone because a model predicted a future crime.",
+    anchors: ["precrime", "predictive", "pre-crime"],
+  },
+  "player-piano/automation-displacing-purpose": {
+    hypothesis: "This headline reports that machines have replaced human workers.",
+    anchors: ["automation", "layoff", "layoffs"],
+  },
+  "fahrenheit-451/entertainment-crowds-out-record": {
+    hypothesis: "This headline reports that entertainment is crowding out the written record.",
+    anchors: ["censorship", "bookburning", "bonfire"],
+  },
+  "the-handmaids-tale/theocratic-control-of-bodies": {
+    hypothesis: "This headline reports that a religious authority is controlling people's bodies.",
+    anchors: ["theocracy", "fatwa", "sterilization"],
+  },
+  "the-trial/process-without-charge": {
+    hypothesis: "This headline reports that someone is being held without a charge.",
+    anchors: ["detention", "detainee", "remand"],
+  },
+  "never-let-me-go/class-used-up": {
+    hypothesis: "This headline reports that a class of people is being used up.",
+    anchors: ["trafficking", "harvesting", "bondage"],
+  },
+  "parable-of-the-sower/gated-safety": {
+    hypothesis: "This headline reports that safety is being sold behind a private gate.",
+    anchors: ["militia", "refugee", "gated"],
+  },
+  "the-time-machine/leisured-class": {
+    hypothesis: "This headline reports that a leisured class is living off other people's work.",
+    anchors: ["rentier", "leisure", "idle"],
+  },
+  "the-time-machine/class-consumed": {
+    hypothesis: "This headline reports that workers are being kept in sweatshop conditions.",
+    anchors: ["sweatshop", "peonage", "bonded"],
+  },
+  "the-island-of-doctor-moreau/flesh-remade": {
+    hypothesis: "This headline reports that an authority is surgically altering people's bodies without consent.",
+    anchors: ["sterilization", "sterilisation", "mutilation"],
+  },
+  "the-island-of-doctor-moreau/civilized-test": {
+    hypothesis: "This headline reports that a test of pain is deciding who counts as civilized.",
+    anchors: ["sentience", "personhood"],
+  },
+  "the-iron-heel/owning-class": {
+    hypothesis: "This headline reports that an oligarchy is ruling the country.",
+    anchors: ["oligarchy", "oligarch", "plutocracy"],
+  },
+  "the-iron-heel/labor-crushed": {
+    hypothesis: "This headline reports that the government is crushing a union.",
+    anchors: ["union", "strike", "picket"],
+  },
+  "it-cant-happen-here/elected-strongman": {
+    hypothesis: "This headline reports that an election installed a dictator.",
+    anchors: ["dictator", "strongman", "autocrat"],
+  },
+  "it-cant-happen-here/militia-ordinary": {
+    hypothesis: "This headline reports that armed militias are taking part in ordinary politics.",
+    anchors: ["militia", "paramilitary", "vigilante"],
+  },
+  "the-space-merchants/ads-as-government": {
+    hypothesis: "This headline reports that government propaganda is functioning as the state.",
+    anchors: ["propaganda", "astroturf"],
+  },
+  "the-space-merchants/person-sold": {
+    hypothesis: "This headline reports that a person's private data is being sold.",
+    anchors: ["broker", "privacy"],
+  },
+  "a-clockwork-orange/aversion-conditioning": {
+    hypothesis: "This headline reports that aversion therapy is being used to remove someone's ability to choose.",
+    anchors: ["aversion", "castration"],
+  },
+  "a-clockwork-orange/youth-edited": {
+    hypothesis: "This headline reports that young people are being sent to re-education.",
+    anchors: ["reeducation", "indoctrination"],
+  },
+  "dune/resource-dependence": {
+    hypothesis: "This headline reports that a powerful state cannot give up a strategic resource.",
+    anchors: ["embargo", "chokepoint", "mineral"],
+  },
+  "dune/religion-as-arm": {
+    hypothesis: "This headline reports that a ruling family is using religion as a military force.",
+    anchors: ["jihad", "theocracy", "crusade"],
+  },
+  "dune/dynasty-bred": {
+    hypothesis: "This headline reports that a hereditary dynasty is installing its next ruler.",
+    anchors: ["dynasty", "succession", "heir"],
+  },
+  "do-androids-dream-of-electric-sheep/personhood-test": {
+    hypothesis: "This headline reports that a test is deciding who counts as a person.",
+    anchors: ["personhood", "sentience", "turing"],
+  },
+  "do-androids-dream-of-electric-sheep/manufactured-life": {
+    hypothesis: "This headline reports that gene-edited humans are being treated as property.",
+    anchors: ["clone", "embryo", "crispr"],
+  },
+  "the-forever-war/life-consumed": {
+    hypothesis: "This headline reports that repeated deployments are consuming a soldier's life.",
+    anchors: ["deployment", "redeployment", "deployments"],
+  },
+  "the-forever-war/replaced-return": {
+    hypothesis: "This headline reports that veterans came home to a country that had moved on without them.",
+    anchors: ["veteran", "veterans", "homecoming"],
+  },
+  "high-rise/building-polity": {
+    hypothesis: "This headline reports that a residential building is governing its own residents.",
+    anchors: ["tenants", "landlord", "condominium"],
+  },
+  "high-rise/height-as-rank": {
+    hypothesis: "This headline reports that a resident's floor is being treated as their class.",
+    anchors: ["penthouse", "mezzanine"],
+  },
+  "neuromancer/firm-as-state": {
+    hypothesis: "This headline reports that a private company is exercising the powers of a state.",
+    anchors: ["sovereignty", "extraterritorial"],
+  },
+  "neuromancer/body-left-behind": {
+    hypothesis: "This headline reports that a person is leaving their body to enter a network.",
+    anchors: ["neural", "cyberspace"],
+  },
+  "hyperion/machine-clients": {
+    hypothesis: "This headline reports that people are being kept as captive clients of a platform.",
+    anchors: ["platform", "lock-in"],
+  },
+  "hyperion/death-leased": {
+    hypothesis: "This headline reports that staying alive is being sold as a subscription.",
+    anchors: ["cryonics", "longevity", "subscription"],
+  },
+  "the-children-of-men/missing-generation": {
+    hypothesis: "This headline reports that births have collapsed.",
+    anchors: ["fertility", "birthrate", "births"],
+  },
+  "the-children-of-men/caretaker-state": {
+    hypothesis: "This headline reports that an aging autocracy is governing the country.",
+    anchors: ["gerontocracy", "autocracy"],
+  },
+  "snow-crash/franchise-sovereignty": {
+    hypothesis: "This headline reports that sovereignty is being sold as a charter city.",
+    anchors: ["charter", "secession"],
+  },
+  "snow-crash/language-contagion": {
+    hypothesis: "This headline reports that a linguistic contagion is controlling how people think.",
+    anchors: ["meme", "contagion"],
+  },
+  "feed/mind-feed": {
+    hypothesis: "This headline reports that advertising is being delivered into a person's mind.",
+    anchors: ["neuromarketing", "subliminal"],
+  },
+  "feed/damaged-market": {
+    hypothesis: "This headline reports that a product was designed to addict its users.",
+    anchors: ["addiction", "addictive"],
+  },
+  "oryx-and-crake/designed-extinction": {
+    hypothesis: "This headline reports that an extinction was deliberately engineered.",
+    anchors: ["extinction"],
+  },
+  "oryx-and-crake/made-humanity": {
+    hypothesis: "This headline reports that engineered humans are replacing existing people.",
+    anchors: ["crispr", "genome", "clone"],
+  },
+};
+
+export function themeRule(bookId: string, themeId: string): ThemeRule | undefined {
+  return themeRules[ruleKey(bookId, themeId)];
+}
 
 export function getBook(id: string): Book | undefined {
   return books.find((book) => book.id === id);

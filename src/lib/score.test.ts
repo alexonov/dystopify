@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { books } from "../../data/books";
-import { phraseHits, scoreFromRaw, scoreTitleGroups, type TitleGroup } from "./score";
+import { books, themeRule, themeRules } from "../../data/books";
+import { anchorHits, entailmentKey, phraseHits, scoreFromRaw, scoreTitleGroups, type TitleGroup } from "./score";
 
 const BANNED = new Set([
   "drug",
@@ -79,8 +79,26 @@ test("phrases stay strict and weighted", () => {
           for (const token of tokens) assert.equal(ADDED_BANNED.has(token), false, `${book.id}: ${phrase.text}`);
         }
       }
+      const rule = themeRule(book.id, theme.id);
+      assert.ok(rule, `${book.id}/${theme.id}`);
+      assert.ok(rule.anchors.length > 0 && rule.anchors.length <= 4);
+      assert.ok(rule.hypothesis.length > 0);
+      for (const anchor of rule.anchors) {
+        assert.equal(anchor.includes(" "), false, anchor);
+        const tokens = anchor.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+        for (const token of tokens) {
+          assert.equal(
+            ["ai", "war", "police", "ban", "drug", "robot", "computer", "drone", "camera"].includes(token),
+            false,
+            anchor,
+          );
+        }
+      }
     }
   }
+  const surveillance = themeRule("1984", "surveillance");
+  assert.ok(surveillance?.anchors.includes("surveillance"));
+  assert.equal(Object.keys(themeRules).length, books.reduce((sum, book) => sum + book.themes.length, 0));
 });
 
 test("ordinary words do not move a meter", () => {
@@ -105,28 +123,34 @@ test("ordinary words do not move a meter", () => {
   }
 });
 
-test("word boundaries and strongest weight", () => {
+test("word boundaries and anchor plus entailment", () => {
   assert.equal(phraseHits("Facial recognition expands", "facial recognition"), true);
   assert.equal(phraseHits("interfacial recognition expands", "facial recognition"), false);
-  assert.equal(phraseHits("masslayoff announced", "mass layoff"), false);
-  assert.equal(phraseHits("Mass Layoffs at the plant", "mass layoffs"), true);
-  assert.equal(phraseHits("AI advances", "replaced by AI"), false);
+  assert.equal(anchorHits("Moroccan intelligence uses surveillance to silence journalists", "surveillance"), true);
+  assert.equal(anchorHits("antisurveillance bill", "surveillance"), false);
 
+  const headline = "Moroccan intelligence uses surveillance to silence journalists";
   const groups: TitleGroup[] = [
     {
-      titleKey: "both",
-      titles: ["Facial recognition and rewriting history"],
-      displayTitle: "Facial recognition and rewriting history",
+      titleKey: "morocco",
+      titles: [headline],
+      displayTitle: headline,
       publishedAt: "2026-10-01T15:00:00.000Z",
     },
   ];
-  const tally = scoreTitleGroups(books[0], groups);
-  assert.equal(tally.raw, 3);
-  assert.equal(tally.score, 31);
+  const book = books[0];
+  assert.equal(scoreTitleGroups(book, groups).raw, 0);
+
+  const low = new Map([[entailmentKey(book.id, "surveillance", "morocco"), 0.89]]);
+  assert.equal(scoreTitleGroups(book, groups, low).raw, 0);
+
+  const high = new Map([[entailmentKey(book.id, "surveillance", "morocco"), 0.992]]);
+  const tally = scoreTitleGroups(book, groups, high);
+  assert.equal(tally.raw, 2);
+  assert.equal(tally.score, 22);
   assert.equal(tally.matchedCount, 1);
-  assert.equal(tally.themePoints.surveillance, 3);
-  assert.equal(tally.themePoints["mutable-record"], 2);
-  assert.ok(tally.themePoints.surveillance + tally.themePoints["mutable-record"] > tally.raw);
+  assert.equal(tally.themePoints.surveillance, 2);
+  assert.equal(tally.matches[0].hits[0].phrase, "surveillance");
 });
 
 test("a repeated title counts once", () => {
@@ -140,7 +164,9 @@ test("a repeated title counts once", () => {
   ];
   const minority = books.find((book) => book.id === "minority-report");
   assert.ok(minority);
-  const tally = scoreTitleGroups(minority, groups);
-  assert.equal(tally.raw, 3);
+  const entailment = new Map([[entailmentKey(minority.id, "prediction-as-guilt", "same"), 0.95]]);
+  const tally = scoreTitleGroups(minority, groups, entailment);
+  assert.equal(tally.raw, 2);
   assert.equal(tally.matchedCount, 1);
+  assert.equal(tally.matches[0].hits.length, 1);
 });

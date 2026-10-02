@@ -3,7 +3,7 @@ export default function Loading() {
     <main aria-busy="true" aria-live="polite" className="space-y-3">
       <p className="font-mono text-[10px] tracking-[0.22em] text-muted-foreground">READING</p>
       <div className="grid grid-cols-2 gap-2 border-y border-border py-2 sm:grid-cols-4">
-        {["asof", "titles", "awake", "move"].map((key) => (
+        {["asof", "titles", "matched", "move"].map((key) => (
           <div key={key} className="h-8 animate-pulse bg-muted" />
         ))}
       </div>

@@ -1,6 +1,12 @@
-import { books } from "../../data/books";
+import { books, themeRule } from "../../data/books";
 import type Database from "better-sqlite3";
-import { scoreTitleGroups, type TitleGroup } from "./score";
+import {
+  entailmentKey,
+  matchedAnchors,
+  premiseForAnchors,
+  scoreTitleGroups,
+  type TitleGroup,
+} from "./score";
 
 type HeadlineRow = {
   feed_id: string;
@@ -71,7 +77,13 @@ function latestPublished(rows: HeadlineRow[]): string {
   return rows.reduce((latest, row) => (row.published_at > latest ? row.published_at : latest), rows[0].published_at);
 }
 
-export function recomputeDate(db: Database.Database, date: string, computedAt: string): void {
+export type EntailmentPair = {
+  id: string;
+  premise: string;
+  hypothesis: string;
+};
+
+export function headlineGroups(db: Database.Database, date: string): TitleGroup[] {
   const rows = db
     .prepare(
       `SELECT feed_id, title, title_key, published_at
@@ -87,13 +99,41 @@ export function recomputeDate(db: Database.Database, date: string, computedAt: s
     grouped.set(row.title_key, list);
   }
 
-  const groups: TitleGroup[] = [...grouped.entries()].map(([key, items]) => ({
+  return [...grouped.entries()].map(([key, items]) => ({
     titleKey: key,
     titles: items.map((item) => item.title),
     displayTitle: displayTitle(items),
     publishedAt: latestPublished(items),
   }));
+}
 
+export function entailmentPairs(groups: TitleGroup[]): EntailmentPair[] {
+  const pairs: EntailmentPair[] = [];
+  for (const book of books) {
+    for (const theme of book.themes) {
+      const rule = themeRule(book.id, theme.id);
+      if (!rule) continue;
+      for (const group of groups) {
+        const found = matchedAnchors(group.titles, rule.anchors);
+        if (found.length === 0) continue;
+        pairs.push({
+          id: entailmentKey(book.id, theme.id, group.titleKey),
+          premise: premiseForAnchors(group.titles, found),
+          hypothesis: rule.hypothesis,
+        });
+      }
+    }
+  }
+  return pairs;
+}
+
+export function recomputeDate(
+  db: Database.Database,
+  date: string,
+  computedAt: string,
+  entailment: ReadonlyMap<string, number> = new Map(),
+): void {
+  const groups = headlineGroups(db, date);
   const headlinesRead = groups.length;
 
   const insertScore = db.prepare(`
@@ -120,7 +160,7 @@ export function recomputeDate(db: Database.Database, date: string, computedAt: s
     db.prepare(`DELETE FROM score_match_phrases WHERE date = ?`).run(date);
 
     for (const book of books) {
-      const tally = scoreTitleGroups(book, groups);
+      const tally = scoreTitleGroups(book, groups, entailment);
       insertScore.run({
         date,
         bookId: book.id,

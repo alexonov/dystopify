@@ -1,4 +1,7 @@
-import { RAW_SCALE, type Book } from "../../data/books";
+import { RAW_SCALE, themeRule, type Book } from "../../data/books";
+
+export const ANCHOR_WEIGHT = 2;
+export const ENTAILMENT_MIN = 0.9;
 
 export type PhraseHit = {
   themeId: string;
@@ -39,6 +42,23 @@ export function phraseHits(title: string, phrase: string): boolean {
   return new RegExp(`\\b${escaped}\\b`, "i").test(title);
 }
 
+export function anchorHits(title: string, anchor: string): boolean {
+  return phraseHits(title, anchor);
+}
+
+export function entailmentKey(bookId: string, themeId: string, titleKey: string): string {
+  return `${bookId}\u0000${themeId}\u0000${titleKey}`;
+}
+
+export function matchedAnchors(titles: string[], anchors: string[]): string[] {
+  return anchors.filter((anchor) => titles.some((title) => anchorHits(title, anchor)));
+}
+
+export function premiseForAnchors(titles: string[], anchors: string[]): string {
+  const hits = titles.filter((title) => anchors.some((anchor) => anchorHits(title, anchor)));
+  return [...hits].sort((a, b) => b.length - a.length || a.localeCompare(b))[0] ?? titles[0];
+}
+
 export function matchTitle(title: string, book: Book): { weight: number; hits: PhraseHit[] } {
   const hits: PhraseHit[] = [];
   for (const theme of book.themes) {
@@ -56,7 +76,11 @@ export function matchTitle(title: string, book: Book): { weight: number; hits: P
   return { weight, hits };
 }
 
-export function scoreTitleGroups(book: Book, groups: TitleGroup[]): BookTally {
+export function scoreTitleGroups(
+  book: Book,
+  groups: TitleGroup[],
+  entailment: ReadonlyMap<string, number> = new Map(),
+): BookTally {
   const themePoints: Record<string, number> = {};
   for (const theme of book.themes) themePoints[theme.id] = 0;
 
@@ -64,32 +88,29 @@ export function scoreTitleGroups(book: Book, groups: TitleGroup[]): BookTally {
   const matches: ScoredMatch[] = [];
 
   for (const group of groups) {
-    let best = 0;
-    const hitMap = new Map<string, PhraseHit>();
-    const themeBest: Record<string, number> = {};
+    const hits: PhraseHit[] = [];
+    let added = 0;
 
-    for (const title of group.titles) {
-      const matched = matchTitle(title, book);
-      if (matched.weight > best) best = matched.weight;
-      for (const hit of matched.hits) {
-        hitMap.set(`${hit.themeId}\u0000${hit.phrase}`, hit);
-        themeBest[hit.themeId] = Math.max(themeBest[hit.themeId] ?? 0, hit.weight);
-      }
+    for (const theme of book.themes) {
+      const rule = themeRule(book.id, theme.id);
+      if (!rule) continue;
+      const found = matchedAnchors(group.titles, rule.anchors);
+      if (found.length === 0) continue;
+      const probability = entailment.get(entailmentKey(book.id, theme.id, group.titleKey));
+      if (probability == null || probability < ENTAILMENT_MIN) continue;
+      hits.push({ themeId: theme.id, phrase: found[0], weight: ANCHOR_WEIGHT });
+      themePoints[theme.id] += ANCHOR_WEIGHT;
+      added += ANCHOR_WEIGHT;
     }
 
-    if (best <= 0) continue;
-    raw += best;
-    for (const [themeId, points] of Object.entries(themeBest)) {
-      themePoints[themeId] += points;
-    }
+    if (added <= 0) continue;
+    raw += added;
     matches.push({
       titleKey: group.titleKey,
       title: group.displayTitle,
       publishedAt: group.publishedAt,
-      weight: best,
-      hits: [...hitMap.values()].sort(
-        (a, b) => b.weight - a.weight || a.phrase.localeCompare(b.phrase),
-      ),
+      weight: added,
+      hits,
     });
   }
 

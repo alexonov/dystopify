@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: "%s · Dystopify",
   },
   description:
-    "A ranked board of how much of today's headlines sit inside dystopian pressures.",
+    "A ranked board of how much of today's headlines match each book.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

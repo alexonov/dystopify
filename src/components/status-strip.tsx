@@ -5,12 +5,12 @@ import type { Banner } from "@/lib/view";
 export function StatusStrip({
   date,
   titlesRead,
-  awake,
+  matched,
   move,
 }: {
   date: string | null;
   titlesRead: number | null;
-  awake: number | null;
+  matched: number | null;
   move: number | null;
 }) {
   return (
@@ -25,8 +25,8 @@ export function StatusStrip({
           <dd className="text-sm tabular-nums">{titlesRead ?? "—"}</dd>
         </div>
         <div>
-          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">AWAKE</dt>
-          <dd className="text-sm tabular-nums">{awake ?? "—"}</dd>
+          <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">MATCHED</dt>
+          <dd className="text-sm tabular-nums">{matched ?? "—"}</dd>
         </div>
         <div>
           <dt className="text-[10px] tracking-[0.18em] text-muted-foreground">MOVE</dt>
@@ -34,7 +34,7 @@ export function StatusStrip({
         </div>
       </dl>
       <p className="font-mono text-[10px] tracking-[0.14em] text-muted-foreground">
-        This is pressure in today&apos;s headlines.
+        How much of today&apos;s headlines match each book.
       </p>
     </div>
   );
